@@ -47,9 +47,9 @@ export function HotelCard({ hotel }) {
       <div className="pt-2.5 border-t flex items-center justify-between mt-auto" style={{ borderColor: 'var(--theme-border)' }}>
         <div>
           <span className="text-base font-bold font-serif" style={{ color: 'var(--theme-primary)' }}>
-            ${hotel.price_per_night_usd}
+            {hotel.currency_symbol || '$'}{Number(hotel.price_per_night || hotel.price_per_night_usd).toLocaleString()}
           </span>
-          <span className="text-[10px] theme-text-muted"> / night</span>
+          <span className="text-[10px] theme-text-muted"> / night ({hotel.currency || 'USD'})</span>
         </div>
         <span className="text-[10px] theme-text-muted theme-card-subtle px-2 py-0.5 rounded border" style={{ borderColor: 'var(--theme-border)' }}>
           Curated Stay

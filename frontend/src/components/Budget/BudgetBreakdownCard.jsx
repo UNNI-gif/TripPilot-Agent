@@ -1,16 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DollarSign, PieChart, ShieldCheck, ShoppingBag, Utensils, Plane, Hotel } from 'lucide-react';
 import { CurrencySelector, CURRENCY_RATES } from './CurrencySelector';
 
 export function BudgetBreakdownCard({ budget, durationDays }) {
-  const [selectedCurrency, setSelectedCurrency] = useState('USD');
+  const initialCurrency = budget?.currency && CURRENCY_RATES[budget.currency] ? budget.currency : 'USD';
+  const [selectedCurrency, setSelectedCurrency] = useState(initialCurrency);
+
+  // Auto-switch to destination's native currency whenever a new trip is loaded
+  useEffect(() => {
+    if (budget?.currency && CURRENCY_RATES[budget.currency]) {
+      setSelectedCurrency(budget.currency);
+    }
+  }, [budget?.currency]);
 
   if (!budget) return null;
 
-  const baseTotal = budget.total_estimated || 1;
+  const baseCurrency = budget.currency || 'USD';
+  const baseRate = CURRENCY_RATES[baseCurrency]?.rate || 1.0;
   const currentRateInfo = CURRENCY_RATES[selectedCurrency] || CURRENCY_RATES.USD;
-  const conv = (amount) => Math.round((amount || 0) * currentRateInfo.rate);
+  const targetRate = currentRateInfo.rate;
 
+  // Accurate currency conversion relative to the base currency
+  const conv = (amount) => {
+    if (!amount) return 0;
+    if (baseCurrency === selectedCurrency) {
+      return ['INR', 'JPY', 'IDR'].includes(selectedCurrency) ? Math.round(amount) : Math.round(amount * 100) / 100;
+    }
+    const inUsd = amount / baseRate;
+    const target = inUsd * targetRate;
+    return ['INR', 'JPY', 'IDR'].includes(selectedCurrency) ? Math.round(target) : Math.round(target * 100) / 100;
+  };
+
+  const baseTotal = budget.total_estimated || 1;
   const convertedTotal = conv(baseTotal);
   const symbol = currentRateInfo.symbol;
 
@@ -68,7 +89,7 @@ export function BudgetBreakdownCard({ budget, durationDays }) {
             Comprehensive Trip Budget
           </h3>
           <p className="text-xs theme-text-muted mt-0.5">
-            Calculated for balanced pacing, central stays, and authentic experiences.
+            Calibrated in local destination standard currency ({selectedCurrency}) with multi-currency conversion.
           </p>
         </div>
 
@@ -90,7 +111,7 @@ export function BudgetBreakdownCard({ budget, durationDays }) {
               <div className="pl-4 border-l" style={{ borderColor: 'var(--theme-border)' }}>
                 <div className="text-[10px] theme-text-muted uppercase font-bold tracking-wider">Per Day</div>
                 <div className="text-lg font-bold font-serif theme-text">
-                  {symbol}{perDayCost} <span className="text-xs font-normal theme-text-muted">/day</span>
+                  {symbol}{perDayCost.toLocaleString()} <span className="text-xs font-normal theme-text-muted">/day</span>
                 </div>
               </div>
             )}

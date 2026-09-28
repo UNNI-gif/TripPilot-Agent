@@ -41,6 +41,9 @@ class FlightOption(BaseModel):
     duration: str = Field(..., description="Flight duration e.g. '11h 30m'")
     stops: str = Field("Non-stop", description="Non-stop or 1 Stop")
     price_usd: float = Field(..., description="Estimated ticket price in USD")
+    price: Optional[float] = Field(None, description="Price in localized destination currency")
+    currency: str = Field("USD", description="Currency code (e.g. INR, EUR, USD)")
+    currency_symbol: str = Field("$", description="Currency symbol (e.g. ₹, €, $)")
     booking_tip: Optional[str] = Field(None, description="Tip for booking or baggage")
 
 class HotelOption(BaseModel):
@@ -48,6 +51,9 @@ class HotelOption(BaseModel):
     tier: str = Field("Mid-Range", description="Budget-Friendly, Mid-Range, Boutique, or Luxury")
     rating: float = Field(4.5, description="Star or guest rating out of 5")
     price_per_night_usd: float = Field(..., description="Estimated price per night in USD")
+    price_per_night: Optional[float] = Field(None, description="Price per night in localized currency")
+    currency: str = Field("USD", description="Currency code (e.g. INR, EUR, USD)")
+    currency_symbol: str = Field("$", description="Currency symbol (e.g. ₹, €, $)")
     location: str = Field(..., description="Neighborhood or area")
     highlights: List[str] = Field(default_factory=list, description="Top 2-3 amenities or perks")
     neighborhood: Optional[str] = Field(None, description="Description of the surrounding neighborhood")
@@ -59,7 +65,8 @@ class BudgetBreakdown(BaseModel):
     activities_tickets: float = Field(0.0, description="Total tickets & entry estimate")
     misc_buffer: float = Field(0.0, description="Emergency and shopping buffer")
     total_estimated: float = Field(0.0, description="Total overall estimated cost")
-    currency: str = Field("USD", description="Currency symbol or code")
+    currency: str = Field("USD", description="Currency symbol or code (e.g. INR, EUR, USD, JPY)")
+    currency_symbol: str = Field("$", description="Currency symbol (e.g. ₹, €, $, ¥)")
 
 class TripOverview(BaseModel):
     destination: str = Field(..., description="City, Region, or Country")

@@ -1,6 +1,74 @@
 from typing import List, Dict, Any
+from app.tools.currency_tool import get_destination_currency
 
 DEST_HOTELS = {
+    "munnar": [
+        {
+            "name": "Munnar Tea Country Resort",
+            "tier": "Boutique",
+            "rating": 4.8,
+            "price_per_night_usd": 58.0,
+            "location": "Chithirapuram, Munnar",
+            "highlights": ["Private Tea Garden Balcony", "Complimentary Spiced Chai Hour", "Campfire Evenings", "Mountain Mist Views"],
+            "neighborhood": "Perched on scenic tiered hillsides overlooking emerald tea valleys and waterfall glades."
+        },
+        {
+            "name": "Windermere Estate Plantation Stay",
+            "tier": "Heritage Boutique",
+            "rating": 4.9,
+            "price_per_night_usd": 85.0,
+            "location": "Pothamedu Viewpoint Road, Munnar",
+            "highlights": ["60-Acre Coffee & Cardamom Estate", "Authentic Kerala Wooden Architecture", "Highland Birdwatching"],
+            "neighborhood": "Serene highland retreat nestled between clouds, rainforest trails, and spice plantations."
+        },
+        {
+            "name": "Fragrant Nature Luxury Mountain Resort",
+            "tier": "Luxury",
+            "rating": 4.7,
+            "price_per_night_usd": 118.0,
+            "location": "Pothamedu, Munnar",
+            "highlights": ["Fireplace in Every Room", "Ayurvedic Wellness Spa", "Panoramic Glass Dining Pavilion"],
+            "neighborhood": "Ultra-luxe mountainside resort offering unmatched sunset panoramas across the Western Ghats."
+        },
+        {
+            "name": "Green Ridge Munnar Valley Inn",
+            "tier": "Budget-Friendly",
+            "rating": 4.4,
+            "price_per_night_usd": 32.0,
+            "location": "Munnar Town Center",
+            "highlights": ["Walk to Local Spice Bazaar", "Complimentary Kerala Breakfast", "Local Cab Tour Desk"],
+            "neighborhood": "Convenient central location minutes from the KDHP Tea Museum and vibrant street food."
+        }
+    ],
+    "india": [
+        {
+            "name": "The Heritage Grand Palace & Spa",
+            "tier": "Luxury",
+            "rating": 4.9,
+            "price_per_night_usd": 185.0,
+            "location": "Palace Grounds & Heritage Quarter",
+            "highlights": ["Royal Courtyard Architecture", "Ayurvedic Rejuvenation Spa", "Traditional Sitar Evenings"],
+            "neighborhood": "Regal historic district showcasing classical arches, fountains, and royal gardens."
+        },
+        {
+            "name": "Zostel Cultural Traveler Hub",
+            "tier": "Budget-Friendly",
+            "rating": 4.6,
+            "price_per_night_usd": 22.0,
+            "location": "Old Town Heritage Lane",
+            "highlights": ["Rooftop Cafe & Chai Lounge", "Walking Tour Meetups", "High-Speed Fiber Wi-Fi"],
+            "neighborhood": "Vibrant, artistic backpacker enclave with colorful street art, cafes, and rooftop vistas."
+        },
+        {
+            "name": "Royal Haveli Boutique Hotel",
+            "tier": "Boutique",
+            "rating": 4.7,
+            "price_per_night_usd": 65.0,
+            "location": "Historic Fort & Market Quarter",
+            "highlights": ["Carved Jharokha Balconies", "Terracotta Courtyard Dining", "Complimentary Morning Masala Chai"],
+            "neighborhood": "Atmospheric quarter footsteps from bustling handicraft bazaars and scenic monuments."
+        }
+    ],
     "france": [
         {
             "name": "Hôtel de la Porte Dorée (Paris)",
@@ -63,25 +131,49 @@ DEST_HOTELS = {
 
 def search_hotels(destination: str, travel_style: str = "moderate") -> List[Dict[str, Any]]:
     """
-    Returns curated accommodation choices across different tiers in the destination.
-    Adapts pricing and ranking according to user budget/style preferences.
+    Returns curated accommodation choices across different tiers in the destination,
+    localized to the destination's national currency standards.
     """
     dest_clean = destination.strip().lower() if destination else "france"
     is_budget = "budget" in travel_style.lower() or "cheap" in travel_style.lower()
 
+    curr_info = get_destination_currency(destination)
+    curr_code = curr_info["code"]
+    curr_symbol = curr_info["symbol"]
+    rate = curr_info["rate"]
+
+    def enrich(hotels_list):
+        enriched = []
+        for h in hotels_list:
+            usd_val = h["price_per_night_usd"]
+            if curr_code in ["INR", "JPY", "IDR"]:
+                local_price = round(usd_val * rate)
+            else:
+                local_price = round(usd_val * rate, 2)
+            enriched.append({
+                **h,
+                "price_per_night": local_price,
+                "currency": curr_code,
+                "currency_symbol": curr_symbol
+            })
+        if is_budget:
+            return sorted(enriched, key=lambda x: x["price_per_night_usd"])
+        return enriched
+
+    for key in ["munnar", "france", "italy", "india"]:
+        if key in dest_clean and key in DEST_HOTELS:
+            return enrich(DEST_HOTELS[key])
+
     for key, hotels in DEST_HOTELS.items():
         if key in dest_clean:
-            if is_budget:
-                # Sort budget first
-                return sorted(hotels, key=lambda x: x["price_per_night_usd"])
-            return hotels
+            return enrich(hotels)
 
     # Generic intelligent hotel templates adapted for destination
     dest_title = destination.strip().title() if destination else "Paris, France"
     budget_price = 55.0 if is_budget else 75.0
     mid_price = 110.0 if is_budget else 145.0
     
-    return [
+    generic = [
         {
             "name": f"{dest_title} Eco Boutique Inn",
             "tier": "Budget-Friendly",
@@ -110,3 +202,4 @@ def search_hotels(destination: str, travel_style: str = "moderate") -> List[Dict
             "neighborhood": "Vibrant urban quarter close to key transit lines and affordable street markets."
         }
     ]
+    return enrich(generic)

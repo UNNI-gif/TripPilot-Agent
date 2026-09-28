@@ -15,6 +15,7 @@ from app.tools.weather_tool import get_weather_and_packing_tips
 from app.tools.budget_tool import calculate_trip_budget
 from app.tools.places_tool import get_attractions_and_dining
 from app.tools.sightseeing_tool import get_destination_sightseeing_hubs
+from app.tools.currency_tool import get_destination_currency, convert_cost_str
 
 # Try importing Google GenAI SDK
 try:
@@ -372,11 +373,13 @@ class TripPilotAgent:
         # that serves as the centerpiece itinerary, while computing the budget for the full duration!
         display_days = min(7, total_duration)
 
+        dest_curr = get_destination_currency(dest)
+
         # Execute autonomous tools
-        flights_raw = search_flights("New York (JFK)", dest, style)
+        flights_raw = search_flights(origin, dest, style)
         hotels_raw = search_hotels(dest, style)
         weather_raw = get_weather_and_packing_tips(dest)
-        budget_raw = calculate_trip_budget(total_duration, style, travelers=2 if is_romantic else 1)
+        budget_raw = calculate_trip_budget(total_duration, style, travelers=2 if is_romantic else 1, destination=dest)
         places_raw = get_attractions_and_dining(dest)
 
         flights = [FlightOption(**f) for f in flights_raw]
@@ -511,7 +514,7 @@ class TripPilotAgent:
                     description=f"Begin your morning exploring {lm1['title']}, immersing in the culture and scenic beauty.",
                     location=lm1.get("location", f"Central {dest}"),
                     category=lm1.get("category", "Culture & Sightseeing"),
-                    estimated_cost=lm1.get("estimated_cost", "$20"),
+                    estimated_cost=convert_cost_str(lm1.get("estimated_cost", "$20"), dest_curr),
                     latitude=lat1,
                     longitude=lng1,
                     tips=lm1.get("tips", "Arrive early to beat the crowd and enjoy prime lighting.")
@@ -523,7 +526,7 @@ class TripPilotAgent:
                     description=f"Continue your afternoon journey discovering {lm2['title']}, with time for artisan shops and cozy cafés.",
                     location=lm2.get("location", f"Historic District, {dest}"),
                     category=lm2.get("category", "Heritage & Leisure"),
-                    estimated_cost=lm2.get("estimated_cost", "Free"),
+                    estimated_cost=convert_cost_str(lm2.get("estimated_cost", "Free"), dest_curr),
                     latitude=lat2,
                     longitude=lng2,
                     tips=lm2.get("tips", "Take time to explore the adjacent pedestrian alleys.")
@@ -535,7 +538,7 @@ class TripPilotAgent:
                     description=f"Savor golden hour views followed by a dinner experience at {dinner_rec.get('name', 'a recommended local bistro')} in {dest}.",
                     location=dinner_rec.get("name", f"Scenic Promenade, {dest}"),
                     category="Romance & Dining" if is_romantic else "Dining & Leisure",
-                    estimated_cost="$35",
+                    estimated_cost=convert_cost_str(dinner_rec.get("estimated_cost", "$35"), dest_curr),
                     latitude=lat3,
                     longitude=lng3,
                     tips="Reserve a window or outdoor terrace table for romantic twilight views."
@@ -561,7 +564,7 @@ class TripPilotAgent:
                         description=f"Sheltered indoor cultural morning: Explore {r1['title']} completely protected from precipitation.",
                         location=r1.get("location", f"Central {dest}"),
                         category=r1.get("category", "Indoor Culture & Art"),
-                        estimated_cost=r1.get("estimated_cost", "$18"),
+                        estimated_cost=convert_cost_str(r1.get("estimated_cost", "$18"), dest_curr),
                         latitude=rlat1,
                         longitude=rlng1,
                         tips=r1.get("tips", "Ideal indoor refuge during inclement weather.")
@@ -573,7 +576,7 @@ class TripPilotAgent:
                         description=f"Rainproof afternoon stroll: Experience {r2['title']} with cozy artisanal tea salons and vintage arcades.",
                         location=r2.get("location", f"Covered District, {dest}"),
                         category=r2.get("category", "Covered Heritage & Shopping"),
-                        estimated_cost=r2.get("estimated_cost", "Free"),
+                        estimated_cost=convert_cost_str(r2.get("estimated_cost", "Free"), dest_curr),
                         latitude=rlat2,
                         longitude=rlng2,
                         tips=r2.get("tips", "Stay dry while admiring vintage bookstores and warm bakeries.")
@@ -585,20 +588,21 @@ class TripPilotAgent:
                         description=f"Intimate subterranean or cellar dinner experience: Savor regional wine tastings and hearty dishes away from rain.",
                         location=r3.get("location", f"Historic Quarter, {dest}"),
                         category=r3.get("category", "Subterranean Dining & Comfort"),
-                        estimated_cost=r3.get("estimated_cost", "$35"),
+                        estimated_cost=convert_cost_str(r3.get("estimated_cost", "$35"), dest_curr),
                         latitude=rlat3,
                         longitude=rlng3,
                         tips="Pre-book cellar tables for prime cozy candlelit ambiance."
                     )
                 ]
 
+            sym = dest_curr["symbol"] if dest_curr["symbol"] not in ["AED", "CHF"] else "$"
             meals = [
                 MealRecommendation(
                     meal_type="Breakfast",
                     name="Morning Artisan Bakery & Espresso Counter",
                     cuisine="Local Bakery & Coffee",
                     recommended_dish="Fresh butter pastries, warm breads & artisan roast coffee",
-                    price_range="$"
+                    price_range=sym
                 ),
                 MealRecommendation(
                     meal_type="Lunch",
@@ -742,11 +746,16 @@ Craft a personalized response with a conversational intro directly acknowledging
             if trip_plan.origin and trip_plan.total_distance_km:
                 distance_mention = f"\n\n🛣️ **Journey Route & Navigation**: Starting from **{trip_plan.origin}** to **{dest}** — Total Distance: **{trip_plan.total_distance_km} km** ({trip_plan.estimated_travel_time}). Open the **Route Map** tab to view the Google Maps style source-to-destination navigation route!"
 
+            currency_mention = ""
+            if trip_plan.budget and trip_plan.budget.currency:
+                currency_mention = f"\n\n💰 **Standard Local Currency**: All travel expenses, stays, tickets, and dining are calculated in **{trip_plan.budget.currency} ({trip_plan.budget.currency_symbol})** according to {dest}'s regional standards."
+
             if intent.get("is_sightseeing_query"):
                 reply = (
                     f"Here are the absolute **best places for sightseeing in {dest}** to plan your holidays around! 🗺️✨\n"
                     f"{hubs_mention}"
-                    f"{distance_mention}\n\n"
+                    f"{distance_mention}"
+                    f"{currency_mention}\n\n"
                     f"I've also synthesized a complete **{days}-day travel itinerary** for {dest} featuring these premier sights.{cab_mention}{budget_mention}\n\n"
                     f"Check out the **Route Map** tab to see exact geographic pins and route trails, or open the **Must-Visit Places** tab to explore all holiday hubs!"
                 )
@@ -755,6 +764,7 @@ Craft a personalized response with a conversational intro directly acknowledging
                     f"I've tailored an unforgettable **{days}-day adventure to {dest}** for you! 🌟{romantic_mention}\n\n"
                     f"We've structured your journey with iconic bucket-list landmarks, intimate scenic promenades, and authentic local dining.{cab_mention}{budget_mention}"
                     f"{distance_mention}"
+                    f"{currency_mention}"
                     f"{hubs_mention}\n\n"
                     f"Explore the interactive **Route Map** (now showing authentic landmark pins and connecting route trails), day-by-day plan, hotel recommendations, and the **Must-Visit Places** tab to explore all top holiday hubs!"
                 )

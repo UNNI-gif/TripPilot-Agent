@@ -19,9 +19,9 @@ export function FlightCard({ flight }) {
           </div>
           <div className="text-right">
             <div className="text-base font-bold font-serif" style={{ color: 'var(--theme-primary)' }}>
-              ${flight.price_usd}
+              {flight.currency_symbol || '$'}{Number(flight.price || flight.price_usd).toLocaleString()}
             </div>
-            <div className="text-[10px] theme-text-muted">est. per traveler</div>
+            <div className="text-[10px] theme-text-muted">est. per traveler ({flight.currency || 'USD'})</div>
           </div>
         </div>
 

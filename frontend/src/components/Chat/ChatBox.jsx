@@ -187,7 +187,7 @@ export function ChatBox({ messages, isLoading, agentStatus, onSendMessage }) {
                 handleSubmit();
               }
             }}
-            placeholder="Describe your travel vision... (e.g. 'Plan 5 days in Kyoto under $2000')"
+            placeholder="Describe your travel vision... (e.g. 'Plan 3 days in Munnar from Bangalore' or '5 days in Paris')"
             className="w-full theme-card-subtle border rounded-xl pl-3.5 pr-12 py-2.5 text-xs sm:text-sm theme-text placeholder-stone-400 focus:outline-none focus:ring-1 resize-none shadow-inner"
             style={{ borderColor: 'var(--theme-border)' }}
           />

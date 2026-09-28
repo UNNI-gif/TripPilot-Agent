@@ -60,7 +60,7 @@ export function ItineraryBoard({ tripPlan, onUpdateTripPlan, onSendMessage }) {
         description: 'Explore local sights or enjoy a relaxing stroll.',
         location: destination,
         category: 'Leisure',
-        estimated_cost: '$0',
+        estimated_cost: (tripPlan.budget?.currency_symbol || '$') + '0',
         tips: 'Enjoy at your own pace.'
       },
       dayNumber,
