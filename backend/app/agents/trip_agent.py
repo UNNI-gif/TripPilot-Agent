@@ -35,7 +35,7 @@ KNOWN_DESTINATIONS = [
     "United Kingdom", "London", "Edinburgh", "Scotland",
     "United States", "New York", "Hawaii", "California", "San Francisco", "Los Angeles", "Miami",
     "Thailand", "Bangkok", "Phuket", "Chiang Mai",
-    "Bali", "Indonesia", "India", "Goa", "Rajasthan",
+    "Bali", "Indonesia", "India", "Munnar", "Goa", "Kerala", "Manali", "Ladakh", "Leh", "Kashmir", "Srinagar", "Delhi", "New Delhi", "Mumbai", "Bangalore", "Bengaluru", "Kochi", "Cochin", "Ooty", "Hampi", "Jaipur", "Udaipur", "Rajasthan", "Kolkata", "Darjeeling", "Cherrapunji", "Shillong", "Meghalaya", "Assam", "Agra", "Chennai", "Hyderabad", "Varanasi", "Rishikesh", "Shimla", "Amritsar",
     "Germany", "Berlin", "Munich", "Frankfurt",
     "Portugal", "Lisbon", "Porto", "Algarve",
     "Netherlands", "Amsterdam",
@@ -105,20 +105,48 @@ class TripPilotAgent:
         text = user_message.strip()
         lower_text = text.lower()
 
-        # 1. Destination Extraction: Prioritize destination in user message
+        # 1. Origin & Destination Extraction
+        origin = None
         dest = None
 
-        # Check for targeted destination preposition patterns like "to France", "in Kyoto", "visit Paris"
-        dest_match = re.search(r'(?:to|in|visit|explore|around|across|for)\s+([A-Za-z\s]{3,30}?)(?:\s+(?:with|for|under|on|and|from|during|starting|\.|\,|$)|$)', text, re.IGNORECASE)
-        if dest_match:
-            candidate = dest_match.group(1).strip()
-            # If candidate matches or contains a known destination
+        # Check for "from <Origin> to <Destination>"
+        from_to_match = re.search(r'from\s+([A-Za-z\s]{2,25}?)\s+to\s+([A-Za-z\s]{2,25}?)(?:\s+(?:with|for|under|on|and|during|\.|\,|$)|$)', text, re.IGNORECASE)
+        if from_to_match:
+            origin_cand = from_to_match.group(1).strip()
+            dest_cand = from_to_match.group(2).strip()
             for known in KNOWN_DESTINATIONS:
-                if known.lower() == candidate.lower() or known.lower() in candidate.lower() or candidate.lower() in known.lower():
+                if known.lower() == origin_cand.lower() or origin_cand.lower() in known.lower():
+                    origin = known
+                if known.lower() == dest_cand.lower() or dest_cand.lower() in known.lower():
                     dest = known
-                    break
-            if not dest and candidate.lower() not in ["the", "a", "an", "all", "some", "cheapest", "cheapest hotels", "major locations", "my", "our", "us"]:
-                dest = candidate.title()
+            if not origin:
+                origin = origin_cand.title()
+            if not dest:
+                dest = dest_cand.title()
+
+        # Check for explicit origin prepositions: "starting from Bangalore", "start from Kochi", "origin: Mumbai"
+        if not origin:
+            orig_match = re.search(r'(?:starting from|start from|departs? from|leaving from|origin\s*:\s*|source\s*:\s*|from)\s+([A-Za-z\s]{2,25}?)(?:\s+(?:to|for|in|into|with|on|\.|\,|$)|$)', text, re.IGNORECASE)
+            if orig_match:
+                candidate = orig_match.group(1).strip()
+                for known in KNOWN_DESTINATIONS:
+                    if known.lower() == candidate.lower() or candidate.lower() in known.lower():
+                        origin = known
+                        break
+                if not origin and candidate.lower() not in ["the", "a", "an", "all", "here"]:
+                    origin = candidate.title()
+
+        # Check for targeted destination preposition patterns like "to Munnar", "in Kyoto", "visit Paris"
+        if not dest:
+            dest_match = re.search(r'(?:to|in|visit|explore|around|across|for)\s+([A-Za-z\s]{3,30}?)(?:\s+(?:with|for|under|on|and|from|during|starting|\.|\,|$)|$)', text, re.IGNORECASE)
+            if dest_match:
+                candidate = dest_match.group(1).strip()
+                for known in KNOWN_DESTINATIONS:
+                    if known.lower() == candidate.lower() or known.lower() in candidate.lower() or candidate.lower() in known.lower():
+                        dest = known
+                        break
+                if not dest and candidate.lower() not in ["the", "a", "an", "all", "some", "cheapest", "cheapest hotels", "major locations", "my", "our", "us"]:
+                    dest = candidate.title()
 
         # If not found via preposition pattern, search whole message for known destinations
         if not dest:
@@ -134,7 +162,19 @@ class TripPilotAgent:
 
         # Fallback if completely unspecified anywhere
         if not dest:
-            dest = "France"
+            dest = "Munnar"
+
+        # Default smart origin based on destination
+        if not origin:
+            if any(k in dest.lower() for k in ["munnar", "kerala", "kochi", "ooty", "hampi"]):
+                origin = "Bangalore"
+            elif any(k in dest.lower() for k in ["manali", "kashmir", "ladakh", "agra", "jaipur"]):
+                origin = "Delhi"
+            elif any(k in dest.lower() for k in ["goa", "udaipur", "mumbai"]):
+                origin = "Mumbai"
+            else:
+                origin = "Bangalore"
+
 
         # 2. Duration Extraction: Check user message first
         days = None
@@ -194,6 +234,7 @@ class TripPilotAgent:
         is_planning_request = any(k in lower_text for k in planning_keywords) or bool(destination_hint)
 
         return {
+            "origin": origin,
             "destination": dest,
             "duration_days": days,
             "travel_style": computed_style,
@@ -208,6 +249,34 @@ class TripPilotAgent:
     def _geocode_destination(self, dest: str) -> Tuple[float, float]:
         """Looks up coordinates via geocoding API or offline cache."""
         coords_map = {
+            "munnar": (10.0889, 77.0595),
+            "kerala": (10.0889, 77.0595),
+            "india": (20.5937, 78.9629),
+            "bangalore": (12.9716, 77.5946),
+            "bengaluru": (12.9716, 77.5946),
+            "delhi": (28.6139, 77.2090),
+            "new delhi": (28.6139, 77.2090),
+            "mumbai": (18.9220, 72.8347),
+            "chennai": (13.0827, 80.2707),
+            "kochi": (9.9312, 76.2673),
+            "cochin": (9.9312, 76.2673),
+            "hyderabad": (17.3850, 78.4867),
+            "goa": (15.2993, 74.1240),
+            "manali": (32.2432, 77.1892),
+            "ladakh": (34.1526, 77.5771),
+            "leh": (34.1526, 77.5771),
+            "kashmir": (34.0837, 74.8370),
+            "srinagar": (34.0837, 74.8370),
+            "jaipur": (26.9124, 75.7873),
+            "udaipur": (24.5854, 73.7125),
+            "kolkata": (22.5726, 88.3639),
+            "darjeeling": (27.0410, 88.2663),
+            "ooty": (11.4102, 76.6950),
+            "hampi": (15.3350, 76.4600),
+            "coimbatore": (11.0168, 76.9558),
+            "madurai": (9.9252, 78.1198),
+            "agra": (27.1751, 78.0421),
+            "pune": (18.5204, 73.8567),
             "france": (48.8566, 2.3522),
             "paris": (48.8566, 2.3522),
             "italy": (41.9028, 12.4964),
@@ -230,8 +299,9 @@ class TripPilotAgent:
             "amsterdam": (52.3676, 4.9041)
         }
         dest_clean = dest.lower().split(",")[0].strip()
-        if dest_clean in coords_map:
-            return coords_map[dest_clean]
+        for k, coords in coords_map.items():
+            if k in dest_clean or dest_clean in k:
+                return coords
 
         try:
             with httpx.Client(timeout=3.0) as client:
@@ -243,7 +313,10 @@ class TripPilotAgent:
         except Exception:
             pass
 
+        if any(w in dest_clean for w in ["munnar", "kerala", "india", "kochi", "bangalore"]):
+            return (10.0889, 77.0595)
         return (48.8566, 2.3522)
+
 
     def _extract_json(self, text: str) -> Optional[Dict[str, Any]]:
         """Extracts JSON block from model response."""
@@ -264,10 +337,36 @@ class TripPilotAgent:
         and user preferences.
         """
         dest = intent["destination"]
+        origin = intent.get("origin") or "Bangalore"
         total_duration = intent["duration_days"]
         style = intent["travel_style"]
         wants_cabs = intent.get("wants_cabs", False)
         is_romantic = intent.get("is_romantic", False)
+
+        origin_lat, origin_lng = self._geocode_destination(origin)
+        base_lat, base_lng = self._geocode_destination(dest)
+
+        import math
+        def calculate_dist(lt1: float, ln1: float, lt2: float, ln2: float) -> float:
+            r = 6371.0
+            dlat = math.radians(lt2 - lt1)
+            dlon = math.radians(ln2 - ln1)
+            a = math.sin(dlat / 2)**2 + math.cos(math.radians(lt1)) * math.cos(math.radians(lt2)) * math.sin(dlon / 2)**2
+            c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+            return r * c
+
+        geo_dist = calculate_dist(origin_lat, origin_lng, base_lat, base_lng)
+        road_distance_km = round(geo_dist * 1.25, 1)
+
+        if road_distance_km <= 150:
+            est_travel_time = f"~{max(1, round(road_distance_km / 45))}h {round((road_distance_km % 45) * 1.2)}m by Scenic Road / Cab"
+        elif road_distance_km <= 650:
+            hours = int(road_distance_km // 55)
+            mins = int((road_distance_km % 55) * 1.05)
+            est_travel_time = f"~{hours}h {mins}m by Road / Express Train"
+        else:
+            flight_hrs = max(1, int(road_distance_km // 750))
+            est_travel_time = f"~{flight_hrs}h Flight + regional cab transfer"
 
         # For long trips (e.g. 1 month / 30 days), create a featured 7-day multi-region loop
         # that serves as the centerpiece itinerary, while computing the budget for the full duration!
@@ -296,6 +395,7 @@ class TripPilotAgent:
 
         overview = TripOverview(
             destination=dest,
+            origin=origin,
             tagline=f"Unforgettable {total_duration}-Day {'Romantic ' if is_romantic else ''}Discovery of {dest}",
             duration_days=total_duration,
             best_season=weather_raw["best_season"],
@@ -305,10 +405,16 @@ class TripPilotAgent:
         )
         budget = BudgetBreakdown(**budget_raw)
 
-        base_lat, base_lng = self._geocode_destination(dest)
-
         # Destination specific daily themes
-        if "france" in dest.lower() or "paris" in dest.lower():
+        if "munnar" in dest.lower():
+            day_themes = [
+                "Emerald Valleys: Arrival in Munnar, KDHP Tata Tea Museum & Attukad Waterfalls Walk",
+                "Wild Western Ghats: Eravikulam National Park Nilgiri Tahr Safari & Anamudi Summit Vista",
+                "Highland Lakes & Peaks: Mattupetty Dam Speedboating, Echo Point & Kundala Arch Dam",
+                "World's Highest Sunrise: 4x4 Jeep Safari to Kolukkumalai Cloud Peak & Top Station",
+                "Fragrant Spices: Cardamom Plantation Walks, Traditional Kathakali & Farewell Kerala Feast"
+            ]
+        elif "france" in dest.lower() or "paris" in dest.lower():
             day_themes = [
                 "Arrival in Paris: Romantic Eiffel Tower Sunset & Champagne Seine River Cruise",
                 "Artistic Heart: The Louvre Masterpieces & Bohemian Montmartre Artists Square",
@@ -338,6 +444,7 @@ class TripPilotAgent:
                 f"Excursion to Nearby Scenic Countryside & Country Estates",
                 f"Relaxed Morning Cafés, Souvenir Treasure Hunting & Farewell Celebration"
             ]
+
 
         transit_notes = (
             "Private Cab & Chauffeur: Utilize Taxi G7 / Uber / Bolt and private chauffeured transfers for effortless door-to-door comfort."
@@ -527,7 +634,14 @@ class TripPilotAgent:
 
         return TripPlanResponse(
             title=title,
+            origin=origin,
             destination=dest,
+            origin_latitude=origin_lat,
+            origin_longitude=origin_lng,
+            destination_latitude=base_lat,
+            destination_longitude=base_lng,
+            total_distance_km=road_distance_km,
+            estimated_travel_time=est_travel_time,
             duration_days=total_duration,
             overview=overview,
             flights=flights,
@@ -537,6 +651,7 @@ class TripPilotAgent:
             key_recommendations=customs,
             sightseeing_hubs=sightseeing_hubs
         )
+
 
     async def run(
         self,
@@ -623,10 +738,15 @@ Craft a personalized response with a conversational intro directly acknowledging
                     hubs_list.append(f"• **{h.name}** ({h.badge or h.region}): {h.tagline}\n  - *Must-See Sights:* {top_sights}\n  - *Recommended Stay:* {h.recommended_stay} | *Best for:* {h.best_for}")
                 hubs_mention = f"\n\n🏰 **Essential Sightseeing Places in {dest} to Plan Your Holiday**:\n" + "\n".join(hubs_list)
 
+            distance_mention = ""
+            if trip_plan.origin and trip_plan.total_distance_km:
+                distance_mention = f"\n\n🛣️ **Journey Route & Navigation**: Starting from **{trip_plan.origin}** to **{dest}** — Total Distance: **{trip_plan.total_distance_km} km** ({trip_plan.estimated_travel_time}). Open the **Route Map** tab to view the Google Maps style source-to-destination navigation route!"
+
             if intent.get("is_sightseeing_query"):
                 reply = (
                     f"Here are the absolute **best places for sightseeing in {dest}** to plan your holidays around! 🗺️✨\n"
-                    f"{hubs_mention}\n\n"
+                    f"{hubs_mention}"
+                    f"{distance_mention}\n\n"
                     f"I've also synthesized a complete **{days}-day travel itinerary** for {dest} featuring these premier sights.{cab_mention}{budget_mention}\n\n"
                     f"Check out the **Route Map** tab to see exact geographic pins and route trails, or open the **Must-Visit Places** tab to explore all holiday hubs!"
                 )
@@ -634,10 +754,12 @@ Craft a personalized response with a conversational intro directly acknowledging
                 reply = (
                     f"I've tailored an unforgettable **{days}-day adventure to {dest}** for you! 🌟{romantic_mention}\n\n"
                     f"We've structured your journey with iconic bucket-list landmarks, intimate scenic promenades, and authentic local dining.{cab_mention}{budget_mention}"
+                    f"{distance_mention}"
                     f"{hubs_mention}\n\n"
                     f"Explore the interactive **Route Map** (now showing authentic landmark pins and connecting route trails), day-by-day plan, hotel recommendations, and the **Must-Visit Places** tab to explore all top holiday hubs!"
                 )
             return reply, trip_plan
+
         else:
             return (
                 f"Hello traveler! I am **TripPilot**, your AI travel copilot. Where would you like to travel next? "

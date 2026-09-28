@@ -63,6 +63,7 @@ class BudgetBreakdown(BaseModel):
 
 class TripOverview(BaseModel):
     destination: str = Field(..., description="City, Region, or Country")
+    origin: Optional[str] = Field("Bangalore", description="Starting source city or point of departure")
     tagline: str = Field(..., description="Catchy travel slogan for this journey")
     duration_days: int = Field(..., description="Total trip duration in days")
     best_season: str = Field(..., description="Best time or season to visit")
@@ -88,7 +89,14 @@ class SightseeingHub(BaseModel):
 class TripPlanResponse(BaseModel):
     id: Optional[int] = None
     title: str = Field(..., description="Inspiring trip title")
+    origin: Optional[str] = Field("Bangalore", description="Source/starting city")
     destination: str = Field(..., description="Primary destination")
+    origin_latitude: Optional[float] = Field(None, description="Starting point latitude")
+    origin_longitude: Optional[float] = Field(None, description="Starting point longitude")
+    destination_latitude: Optional[float] = Field(None, description="Destination latitude")
+    destination_longitude: Optional[float] = Field(None, description="Destination longitude")
+    total_distance_km: Optional[float] = Field(None, description="Total driving/travel distance between source and destination")
+    estimated_travel_time: Optional[str] = Field(None, description="Estimated drive / train / flight duration")
     duration_days: int = Field(..., description="Number of days")
     overview: TripOverview
     flights: List[FlightOption] = Field(default_factory=list)
@@ -101,6 +109,7 @@ class TripPlanResponse(BaseModel):
 class ChatRequest(BaseModel):
     message: str
     session_id: Optional[str] = None
+    origin: Optional[str] = None
     destination: Optional[str] = None
     duration_days: Optional[int] = None
     budget_target: Optional[float] = None
@@ -110,3 +119,4 @@ class ChatResponse(BaseModel):
     session_id: str
     reply: str
     trip_plan: Optional[TripPlanResponse] = None
+

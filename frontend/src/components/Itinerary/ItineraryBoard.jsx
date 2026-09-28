@@ -108,7 +108,14 @@ export function ItineraryBoard({ tripPlan, onUpdateTripPlan, onSendMessage }) {
   return (
     <div className="space-y-6 pb-12">
       {/* Top Overview Banner */}
-      <TripOverviewCard overview={overview} title={title} durationDays={duration_days} />
+      <TripOverviewCard 
+        overview={overview} 
+        title={title} 
+        durationDays={duration_days} 
+        origin={tripPlan.origin}
+        totalDistanceKm={tripPlan.total_distance_km}
+        estimatedTravelTime={tripPlan.estimated_travel_time}
+      />
 
       {/* Navigation Sub-Tabs */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b pb-3" style={{ borderColor: 'var(--theme-border)' }}>
@@ -229,8 +236,20 @@ export function ItineraryBoard({ tripPlan, onUpdateTripPlan, onSendMessage }) {
         <TripMap 
           itinerary={itinerary} 
           destination={destination} 
+          origin={tripPlan.origin}
+          originLatitude={tripPlan.origin_latitude}
+          originLongitude={tripPlan.origin_longitude}
+          destinationLatitude={tripPlan.destination_latitude}
+          destinationLongitude={tripPlan.destination_longitude}
+          totalDistanceKm={tripPlan.total_distance_km}
+          estimatedTravelTime={tripPlan.estimated_travel_time}
           focusedLocation={focusedLocation}
           onClearFocus={() => setFocusedLocation(null)}
+          onPlanRoute={(src, dst) => {
+            if (onSendMessage) {
+              onSendMessage(`Plan a complete trip from ${src} to ${dst}`);
+            }
+          }}
         />
       )}
 

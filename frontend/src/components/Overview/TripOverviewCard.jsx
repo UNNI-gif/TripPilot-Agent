@@ -38,7 +38,7 @@ function categorizeItem(item) {
   return 'wellness';
 }
 
-export function TripOverviewCard({ overview, title, durationDays }) {
+export function TripOverviewCard({ overview, title, durationDays, origin, totalDistanceKm, estimatedTravelTime }) {
   if (!overview) return null;
 
   const storageKey = `trippilot_bag_${overview.destination || 'default'}`;
@@ -162,12 +162,24 @@ export function TripOverviewCard({ overview, title, durationDays }) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 relative z-10">
         <div>
-          <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: 'var(--theme-primary)' }}>
-            <MapPin className="w-3.5 h-3.5" />
-            <span>{overview.destination}</span>
+          <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: 'var(--theme-primary)' }}>
+            <div className="flex items-center space-x-1.5">
+              <MapPin className="w-3.5 h-3.5" />
+              <span>{origin || overview.origin ? `${origin || overview.origin} ➔ ${overview.destination}` : overview.destination}</span>
+            </div>
+            {(totalDistanceKm || overview.total_distance_km) && (
+              <>
+                <span>•</span>
+                <span className="font-mono bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 rounded-full text-[10px] font-bold">
+                  🚗 {totalDistanceKm || overview.total_distance_km} km ({estimatedTravelTime || overview.estimated_travel_time || 'Road Route'})
+                </span>
+              </>
+            )}
             <span>•</span>
-            <Calendar className="w-3.5 h-3.5" />
-            <span>{durationDays || overview.duration_days} Days Journey</span>
+            <div className="flex items-center space-x-1">
+              <Calendar className="w-3.5 h-3.5" />
+              <span>{durationDays || overview.duration_days} Days Journey</span>
+            </div>
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold font-serif theme-text tracking-tight">
             {title || overview.tagline}

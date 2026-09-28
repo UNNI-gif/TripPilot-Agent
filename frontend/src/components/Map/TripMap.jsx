@@ -1,6 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
-import { MapPin, Navigation, Maximize2, Compass, Film, Clapperboard, Layers, Eye } from 'lucide-react';
+import { 
+  MapPin, 
+  Navigation, 
+  Maximize2, 
+  Compass, 
+  Clapperboard, 
+  Eye, 
+  ArrowLeftRight, 
+  Car, 
+  Clock, 
+  Sparkles,
+  Search
+} from 'lucide-react';
 import { apiService } from '../../services/api';
 
 const WARM_DAY_COLORS = ['#C84B26', '#3B684D', '#C98D25', '#A96E1D', '#832E16', '#20362A', '#D9532F'];
@@ -12,22 +24,230 @@ const DIRECTION_COLORS = {
   East: '#0d9488',  // Teal
 };
 
-export function TripMap({ itinerary, destination, focusedLocation, onClearFocus }) {
+// Comprehensive coordinate dictionary for immediate client-side resolution
+const CITY_COORDINATES = {
+  // South India
+  'munnar': [10.0889, 77.0595],
+  'bangalore': [12.9716, 77.5946],
+  'bengaluru': [12.9716, 77.5946],
+  'kochi': [9.9312, 76.2673],
+  'cochin': [9.9312, 76.2673],
+  'coimbatore': [11.0168, 76.9558],
+  'madurai': [9.9252, 78.1198],
+  'chennai': [13.0827, 80.2707],
+  'mysore': [12.2958, 76.6394],
+  'mysuru': [12.2958, 76.6394],
+  'ooty': [11.4102, 76.6950],
+  'alleppey': [9.4981, 76.3388],
+  'alappuzha': [9.4981, 76.3388],
+  'wayanad': [11.6854, 76.1320],
+  'thekkady': [9.6031, 77.1615],
+  'hyderabad': [17.3850, 78.4867],
+  'trivandrum': [8.5241, 76.9366],
+  'thiruvananthapuram': [8.5241, 76.9366],
+  'hampi': [15.3350, 76.4600],
+  'goa': [15.2993, 74.1240],
+  // North & Central India
+  'delhi': [28.6139, 77.2090],
+  'new delhi': [28.6139, 77.2090],
+  'mumbai': [19.0760, 72.8777],
+  'jaipur': [26.9124, 75.7873],
+  'udaipur': [24.5854, 73.7125],
+  'agra': [27.1767, 78.0081],
+  'varanasi': [25.3176, 82.9739],
+  'manali': [32.2432, 77.1892],
+  'shimla': [31.1048, 77.1734],
+  'leh': [34.1526, 77.5771],
+  'ladakh': [34.1526, 77.5771],
+  'srinagar': [34.0837, 74.7973],
+  'kashmir': [34.0837, 74.7973],
+  'kolkata': [22.5726, 88.3639],
+  'pune': [18.5204, 73.8567],
+  'ahmedabad': [23.0225, 72.5714],
+  'chandigarh': [30.7333, 76.7794],
+  // International
+  'france': [46.2276, 2.2137],
+  'paris': [48.8566, 2.3522],
+  'tokyo': [35.6762, 139.6503],
+  'japan': [36.2048, 138.2529],
+  'london': [51.5074, -0.1278],
+  'dubai': [25.2048, 55.2708],
+  'singapore': [1.3521, 103.8198],
+  'rome': [41.9028, 12.4964],
+  'italy': [41.8719, 12.5674],
+  'bangkok': [13.7563, 100.5018],
+  'bali': [-8.4095, 115.1889],
+  'new york': [40.7128, -74.0060]
+};
+
+function resolveCoords(name) {
+  if (!name) return null;
+  const clean = name.toLowerCase().trim();
+  for (const [key, coords] of Object.entries(CITY_COORDINATES)) {
+    if (clean === key || clean.includes(key) || key.includes(clean)) {
+      return coords;
+    }
+  }
+  return null;
+}
+
+function calculateRoadDistanceKm(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Earth radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const straightLine = R * c;
+  // Road winding factor 1.25 for Indian highways / mountain ghat roads
+  return Math.round(straightLine * 1.25 * 10) / 10;
+}
+
+function calculateTravelDuration(distanceKm) {
+  if (!distanceKm || distanceKm <= 0) return '0 min';
+  if (distanceKm < 90) {
+    const hours = distanceKm / 42;
+    const h = Math.floor(hours);
+    const m = Math.round((hours - h) * 60);
+    return h > 0 ? `~${h}h ${m}m Drive` : `~${m}m Drive`;
+  }
+  const hours = distanceKm / 52;
+  const h = Math.floor(hours);
+  const m = Math.round((hours - h) * 60);
+  return `~${h}h ${m}m by Road / Express`;
+}
+
+export function TripMap({ 
+  itinerary, 
+  destination, 
+  origin: propOrigin,
+  originLatitude: propOriginLat,
+  originLongitude: propOriginLng,
+  destinationLatitude: propDestLat,
+  destinationLongitude: propDestLng,
+  totalDistanceKm: propDistance,
+  estimatedTravelTime: propTravelTime,
+  focusedLocation, 
+  onClearFocus,
+  onPlanRoute
+}) {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markersLayerRef = useRef(null);
   const routesLayerRef = useRef(null);
   const cinemaMarkersRef = useRef({});
 
-  const isIndiaDest = destination?.toLowerCase().includes('india') ||
-    ['delhi', 'mumbai', 'goa', 'kerala', 'manali', 'ladakh', 'kashmir', 'hampi', 'ooty', 'jaipur', 'udaipur', 'kolkata'].some(
-      (k) => destination?.toLowerCase().includes(k)
+  // Source and Destination Interactive State
+  const defaultDest = destination || 'Munnar';
+  const defaultSource = propOrigin || (defaultDest.toLowerCase().includes('munnar') ? 'Bangalore' : 'Bangalore');
+
+  const [sourceInput, setSourceInput] = useState(defaultSource);
+  const [destInput, setDestInput] = useState(defaultDest);
+
+  // Active Source & Destination Coordinates
+  const [sourceCoords, setSourceCoords] = useState(() => {
+    if (propOriginLat && propOriginLng) return [propOriginLat, propOriginLng];
+    return resolveCoords(defaultSource) || [12.9716, 77.5946]; // Default Bangalore
+  });
+
+  const [destCoords, setDestCoords] = useState(() => {
+    if (propDestLat && propDestLng) return [propDestLat, propDestLng];
+    return resolveCoords(defaultDest) || [10.0889, 77.0595]; // Default Munnar
+  });
+
+  const [activeDistance, setActiveDistance] = useState(() => {
+    if (propDistance) return propDistance;
+    if (sourceCoords && destCoords) {
+      return calculateRoadDistanceKm(sourceCoords[0], sourceCoords[1], destCoords[0], destCoords[1]);
+    }
+    return null;
+  });
+
+  const [activeDuration, setActiveDuration] = useState(() => {
+    if (propTravelTime) return propTravelTime;
+    if (activeDistance) return calculateTravelDuration(activeDistance);
+    return null;
+  });
+
+  // Update state if props change from backend agent response
+  useEffect(() => {
+    if (propOrigin) setSourceInput(propOrigin);
+    if (destination) setDestInput(destination);
+
+    let sCoords = null;
+    let dCoords = null;
+
+    if (propOriginLat && propOriginLng) {
+      sCoords = [propOriginLat, propOriginLng];
+    } else if (propOrigin) {
+      sCoords = resolveCoords(propOrigin);
+    }
+
+    if (propDestLat && propDestLng) {
+      dCoords = [propDestLat, propDestLng];
+    } else if (destination) {
+      dCoords = resolveCoords(destination);
+    }
+
+    if (sCoords) setSourceCoords(sCoords);
+    if (dCoords) setDestCoords(dCoords);
+
+    if (propDistance) {
+      setActiveDistance(propDistance);
+      setActiveDuration(propTravelTime || calculateTravelDuration(propDistance));
+    } else if (sCoords && dCoords) {
+      const dist = calculateRoadDistanceKm(sCoords[0], sCoords[1], dCoords[0], dCoords[1]);
+      setActiveDistance(dist);
+      setActiveDuration(calculateTravelDuration(dist));
+    }
+  }, [propOrigin, destination, propOriginLat, propOriginLng, propDestLat, propDestLng, propDistance, propTravelTime]);
+
+  const isIndiaDest = (destInput || destination || '').toLowerCase().includes('india') ||
+    ['munnar', 'delhi', 'mumbai', 'goa', 'kerala', 'manali', 'ladakh', 'kashmir', 'hampi', 'ooty', 'jaipur', 'udaipur', 'kolkata'].some(
+      (k) => (destInput || destination || '').toLowerCase().includes(k)
     );
 
-  const [mapMode, setMapMode] = useState(focusedLocation ? 'cinema' : (isIndiaDest ? 'cinema' : 'itinerary')); // 'itinerary' | 'cinema'
+  const [mapMode, setMapMode] = useState('itinerary'); // 'itinerary' | 'cinema'
   const [selectedDay, setSelectedDay] = useState('all');
   const [cinemaDirection, setCinemaDirection] = useState('all'); // 'all', 'North', 'South', 'West', 'East'
   const [cinemaLocations, setCinemaLocations] = useState([]);
+
+  // Handle Source / Destination Changes
+  const applyDirections = (newSource, newDest) => {
+    const s = newSource !== undefined ? newSource : sourceInput;
+    const d = newDest !== undefined ? newDest : destInput;
+
+    const sCoords = resolveCoords(s) || sourceCoords;
+    const dCoords = resolveCoords(d) || destCoords;
+
+    setSourceInput(s);
+    setDestInput(d);
+    setSourceCoords(sCoords);
+    setDestCoords(dCoords);
+
+    if (sCoords && dCoords) {
+      const dist = calculateRoadDistanceKm(sCoords[0], sCoords[1], dCoords[0], dCoords[1]);
+      setActiveDistance(dist);
+      setActiveDuration(calculateTravelDuration(dist));
+    }
+  };
+
+  const handleSwap = () => {
+    const nextSource = destInput;
+    const nextDest = sourceInput;
+    const nextSourceCoords = destCoords;
+    const nextDestCoords = sourceCoords;
+
+    setSourceInput(nextSource);
+    setDestInput(nextDest);
+    setSourceCoords(nextSourceCoords);
+    setDestCoords(nextDestCoords);
+  };
+
+  // Quick preset sources
+  const quickOriginPresets = ['Bangalore', 'Kochi', 'Coimbatore', 'Madurai', 'Chennai', 'Mumbai', 'Delhi'];
 
   // Extract all itinerary points with coordinates
   const itineraryPoints = [];
@@ -60,13 +280,8 @@ export function TripMap({ itinerary, destination, focusedLocation, onClearFocus 
     if (!mapContainerRef.current) return;
 
     if (!mapInstanceRef.current) {
-      let defaultCenter = [20.5937, 78.9629]; // Geographic center of India
-      let defaultZoom = 5;
-
-      if (itineraryPoints.length > 0 && mapMode === 'itinerary') {
-        defaultCenter = [itineraryPoints[0].latitude, itineraryPoints[0].longitude];
-        defaultZoom = 12;
-      }
+      let defaultCenter = destCoords || [10.0889, 77.0595];
+      let defaultZoom = 8;
 
       const map = L.map(mapContainerRef.current, {
         center: defaultCenter,
@@ -93,7 +308,7 @@ export function TripMap({ itinerary, destination, focusedLocation, onClearFocus 
     };
   }, []);
 
-  // Render Markers and Routes whenever mapMode, selectedDay, cinemaDirection, or locations change
+  // Render Markers, GMaps Pins (A & B) and Routes
   useEffect(() => {
     if (!mapInstanceRef.current || !markersLayerRef.current || !routesLayerRef.current) return;
 
@@ -102,10 +317,196 @@ export function TripMap({ itinerary, destination, focusedLocation, onClearFocus 
     routesLayerRef.current.clearLayers();
     cinemaMarkersRef.current = {};
 
-    const latLngs = [];
+    const allRouteLatLngs = [];
 
-    // MODE 1: ITINERARY ROUTE MAP
+    // MODE 1: ITINERARY & GMAPS NAVIGATION ROUTE
     if (mapMode === 'itinerary') {
+      // 1. PIN A: SOURCE / ORIGIN (Google Maps Style Green Pin)
+      if (sourceCoords && sourceCoords.length === 2) {
+        allRouteLatLngs.push(sourceCoords);
+
+        const sourceIcon = L.divIcon({
+          className: 'gmaps-source-pin',
+          html: `
+            <div style="position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer;">
+              <div style="
+                position: absolute;
+                width: 36px;
+                height: 36px;
+                background: rgba(16, 185, 129, 0.35);
+                border-radius: 50%;
+                top: -3px;
+                animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+              "></div>
+              <div style="
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                width: 30px;
+                height: 30px;
+                border-radius: 50% 50% 50% 0;
+                transform: rotate(-45deg);
+                border: 2.5px solid #ffffff;
+                box-shadow: 0 4px 14px rgba(5, 150, 105, 0.55);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 20;
+              ">
+                <span style="
+                  transform: rotate(45deg);
+                  color: #ffffff;
+                  font-size: 13px;
+                  font-weight: 900;
+                  font-family: 'Plus Jakarta Sans', sans-serif;
+                ">A</span>
+              </div>
+              <div style="
+                margin-top: 2px;
+                background: rgba(15, 23, 42, 0.88);
+                color: #ffffff;
+                padding: 1px 6px;
+                border-radius: 4px;
+                font-size: 9px;
+                font-weight: 700;
+                white-space: nowrap;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                z-index: 20;
+              ">${sourceInput || 'Origin'}</div>
+            </div>
+          `,
+          iconSize: [36, 48],
+          iconAnchor: [18, 30],
+          popupAnchor: [0, -32],
+        });
+
+        const sourcePopup = `
+          <div style="font-family: 'Plus Jakarta Sans', sans-serif; color: #1e293b; min-width: 200px; padding: 4px;">
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+              <span style="background: #10b981; color: white; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px;">
+                START POINT (A)
+              </span>
+              <span style="font-size: 10px; color: #64748b; font-family: monospace;">
+                ${sourceCoords[0].toFixed(3)}°N, ${sourceCoords[1].toFixed(3)}°E
+              </span>
+            </div>
+            <div style="font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom: 4px;">
+              ${sourceInput}
+            </div>
+            <div style="font-size: 11px; color: #475569; margin-bottom: 6px;">
+              Origin departure terminal for the holiday route.
+            </div>
+            ${activeDistance ? `
+              <div style="background: #ecfdf5; border-left: 3px solid #10b981; padding: 4px 6px; font-size: 10px; color: #065f46; font-weight: 600;">
+                🚗 Total Route to ${destInput}: <strong>${activeDistance} km</strong> (${activeDuration})
+              </div>
+            ` : ''}
+          </div>
+        `;
+
+        const sourceMarker = L.marker(sourceCoords, { icon: sourceIcon }).bindPopup(sourcePopup);
+        markersLayerRef.current.addLayer(sourceMarker);
+      }
+
+      // 2. PIN B: DESTINATION (Google Maps Style Crimson Pin)
+      if (destCoords && destCoords.length === 2) {
+        allRouteLatLngs.push(destCoords);
+
+        const destIcon = L.divIcon({
+          className: 'gmaps-dest-pin',
+          html: `
+            <div style="position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer;">
+              <div style="
+                background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+                width: 32px;
+                height: 32px;
+                border-radius: 50% 50% 50% 0;
+                transform: rotate(-45deg);
+                border: 2.5px solid #ffffff;
+                box-shadow: 0 4px 14px rgba(185, 28, 28, 0.6);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 20;
+              ">
+                <span style="
+                  transform: rotate(45deg);
+                  color: #ffffff;
+                  font-size: 13px;
+                  font-weight: 900;
+                  font-family: 'Plus Jakarta Sans', sans-serif;
+                ">B</span>
+              </div>
+              <div style="
+                margin-top: 2px;
+                background: rgba(185, 28, 28, 0.95);
+                color: #ffffff;
+                padding: 1px 6px;
+                border-radius: 4px;
+                font-size: 9px;
+                font-weight: 700;
+                white-space: nowrap;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                z-index: 20;
+              ">${destInput || 'Destination'}</div>
+            </div>
+          `,
+          iconSize: [36, 48],
+          iconAnchor: [18, 32],
+          popupAnchor: [0, -34],
+        });
+
+        const destPopup = `
+          <div style="font-family: 'Plus Jakarta Sans', sans-serif; color: #1e293b; min-width: 220px; padding: 4px;">
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+              <span style="background: #ef4444; color: white; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px;">
+                DESTINATION (B)
+              </span>
+              <span style="font-size: 10px; color: #64748b; font-family: monospace;">
+                ${destCoords[0].toFixed(3)}°N, ${destCoords[1].toFixed(3)}°E
+              </span>
+            </div>
+            <div style="font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom: 4px;">
+              ${destInput}
+            </div>
+            <div style="font-size: 11px; color: #475569; margin-bottom: 6px;">
+              Primary vacation destination & sightseeing territory.
+            </div>
+            ${activeDistance ? `
+              <div style="background: #fef2f2; border-left: 3px solid #ef4444; padding: 4px 6px; font-size: 10px; color: #991b1b; font-weight: 600;">
+                📍 Distance from ${sourceInput}: <strong>${activeDistance} km</strong> (${activeDuration})
+              </div>
+            ` : ''}
+          </div>
+        `;
+
+        const destMarker = L.marker(destCoords, { icon: destIcon }).bindPopup(destPopup);
+        markersLayerRef.current.addLayer(destMarker);
+      }
+
+      // 3. GMAPS NAVIGATION ROUTE POLYLINE (From Source to Destination)
+      if (sourceCoords && destCoords) {
+        const directRoute = [sourceCoords, destCoords];
+
+        // Outer white casing
+        const shadowPoly = L.polyline(directRoute, {
+          color: '#ffffff',
+          weight: 7,
+          opacity: 0.9,
+          lineJoin: 'round',
+        });
+        routesLayerRef.current.addLayer(shadowPoly);
+
+        // Vibrant Google Maps Blue Polyline
+        const navPoly = L.polyline(directRoute, {
+          color: '#2563eb',
+          weight: 4,
+          opacity: 0.85,
+          dashArray: '8, 8',
+          lineJoin: 'round',
+        });
+        routesLayerRef.current.addLayer(navPoly);
+      }
+
+      // 4. ITINERARY DAY STOPS & INTRA-CITY TRAILS
       const activePoints = selectedDay === 'all' 
         ? itineraryPoints 
         : itineraryPoints.filter((p) => p.dayNumber === parseInt(selectedDay, 10));
@@ -118,48 +519,45 @@ export function TripMap({ itinerary, destination, focusedLocation, onClearFocus 
           pointsByDay[pt.dayNumber].push(pt);
         });
 
-        // Draw route lines connecting sequential stops
+        // Draw day route lines connecting sequential stops
         Object.entries(pointsByDay).forEach(([dayNum, dayPts]) => {
           if (dayPts.length >= 2) {
             const routeCoords = dayPts.map((p) => [p.latitude, p.longitude]);
             const dayColor = WARM_DAY_COLORS[(parseInt(dayNum, 10) - 1) % WARM_DAY_COLORS.length];
 
-            const shadowPolyline = L.polyline(routeCoords, {
+            const dayShadow = L.polyline(routeCoords, {
               color: '#ffffff',
-              weight: 6,
-              opacity: 0.9,
+              weight: 5,
+              opacity: 0.8,
               lineJoin: 'round',
-              lineCap: 'round',
             });
-            routesLayerRef.current.addLayer(shadowPolyline);
+            routesLayerRef.current.addLayer(dayShadow);
 
-            const routePolyline = L.polyline(routeCoords, {
+            const dayRoute = L.polyline(routeCoords, {
               color: dayColor,
-              weight: 3.5,
+              weight: 3,
               opacity: 0.95,
-              dashArray: '7, 8',
               lineJoin: 'round',
-              lineCap: 'round',
             });
-            routesLayerRef.current.addLayer(routePolyline);
+            routesLayerRef.current.addLayer(dayRoute);
           }
         });
 
         // Add Markers for each stop
         activePoints.forEach((pt) => {
-          latLngs.push([pt.latitude, pt.longitude]);
+          allRouteLatLngs.push([pt.latitude, pt.longitude]);
 
           const customIcon = L.divIcon({
             className: 'custom-leaflet-pin',
             html: `
               <div style="
                 background-color: ${pt.color};
-                width: 32px;
-                height: 32px;
+                width: 30px;
+                height: 30px;
                 border-radius: 50% 50% 50% 0;
                 transform: rotate(-45deg);
-                border: 2.5px solid #ffffff;
-                box-shadow: 0 4px 12px rgba(60,30,10,0.35);
+                border: 2px solid #ffffff;
+                box-shadow: 0 4px 10px rgba(60,30,10,0.35);
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -174,9 +572,9 @@ export function TripMap({ itinerary, destination, focusedLocation, onClearFocus 
                 ">D${pt.dayNumber}</span>
               </div>
             `,
-            iconSize: [32, 32],
-            iconAnchor: [16, 32],
-            popupAnchor: [0, -32],
+            iconSize: [30, 30],
+            iconAnchor: [15, 30],
+            popupAnchor: [0, -30],
           });
 
           const popupContent = `
@@ -206,10 +604,11 @@ export function TripMap({ itinerary, destination, focusedLocation, onClearFocus 
             .bindPopup(popupContent);
           markersLayerRef.current.addLayer(marker);
         });
+      }
 
-        if (latLngs.length > 0 && !focusedLocation) {
-          map.fitBounds(L.latLngBounds(latLngs), { padding: [45, 45], maxZoom: 14 });
-        }
+      // Automatically fit map view to show both Origin (A) and Destination (B) and stops
+      if (allRouteLatLngs.length > 0 && !focusedLocation) {
+        map.fitBounds(L.latLngBounds(allRouteLatLngs), { padding: [55, 55], maxZoom: 14 });
       }
     }
 
@@ -224,7 +623,7 @@ export function TripMap({ itinerary, destination, focusedLocation, onClearFocus 
       });
 
       activeCinema.forEach((loc) => {
-        latLngs.push([loc.latitude, loc.longitude]);
+        allRouteLatLngs.push([loc.latitude, loc.longitude]);
         const dirColor = DIRECTION_COLORS[loc.direction] || '#d97706';
         const isFocused = focusedLocation && focusedLocation.name === loc.name;
 
@@ -312,9 +711,8 @@ export function TripMap({ itinerary, destination, focusedLocation, onClearFocus 
         markersLayerRef.current.addLayer(marker);
       });
 
-      // Fit bounds for cinema locations
-      if (latLngs.length > 0 && !focusedLocation) {
-        map.fitBounds(L.latLngBounds(latLngs), { padding: [40, 40] });
+      if (allRouteLatLngs.length > 0 && !focusedLocation) {
+        map.fitBounds(L.latLngBounds(allRouteLatLngs), { padding: [40, 40] });
       }
     }
 
@@ -328,23 +726,29 @@ export function TripMap({ itinerary, destination, focusedLocation, onClearFocus 
         }
       }, 1300);
     }
-  }, [mapMode, selectedDay, cinemaDirection, cinemaLocations, focusedLocation]);
+  }, [mapMode, selectedDay, cinemaDirection, cinemaLocations, focusedLocation, sourceCoords, destCoords, sourceInput, destInput, activeDistance, activeDuration]);
 
   const handleFitBounds = () => {
     if (!mapInstanceRef.current) return;
     const map = mapInstanceRef.current;
-    if (mapMode === 'itinerary' && itineraryPoints.length > 0) {
-      const latLngs = itineraryPoints.map((p) => [p.latitude, p.longitude]);
-      map.fitBounds(L.latLngBounds(latLngs), { padding: [45, 45] });
+    const latLngs = [];
+
+    if (mapMode === 'itinerary') {
+      if (sourceCoords) latLngs.push(sourceCoords);
+      if (destCoords) latLngs.push(destCoords);
+      itineraryPoints.forEach((p) => latLngs.push([p.latitude, p.longitude]));
     } else if (mapMode === 'cinema' && cinemaLocations.length > 0) {
-      const active = cinemaLocations.filter((loc) => {
-        if (!loc.latitude || !loc.longitude) return false;
-        if (cinemaDirection !== 'all' && loc.direction?.toLowerCase() !== cinemaDirection.toLowerCase()) return false;
-        return true;
+      cinemaLocations.forEach((loc) => {
+        if (loc.latitude && loc.longitude) {
+          if (cinemaDirection === 'all' || loc.direction?.toLowerCase() === cinemaDirection.toLowerCase()) {
+            latLngs.push([loc.latitude, loc.longitude]);
+          }
+        }
       });
-      if (active.length > 0) {
-        map.fitBounds(L.latLngBounds(active.map((l) => [l.latitude, l.longitude])), { padding: [40, 40] });
-      }
+    }
+
+    if (latLngs.length > 0) {
+      map.fitBounds(L.latLngBounds(latLngs), { padding: [50, 50] });
     }
   };
 
@@ -352,8 +756,165 @@ export function TripMap({ itinerary, destination, focusedLocation, onClearFocus 
 
   return (
     <div className="theme-card rounded-2xl overflow-hidden border shadow-warm">
-      {/* Map Header & Multi-Mode Navigation */}
-      <div className="p-3.5 border-b flex flex-wrap items-center justify-between gap-3" style={{ backgroundColor: 'var(--theme-card)', borderColor: 'var(--theme-border)' }}>
+      
+      {/* 1. GOOGLE MAPS STYLE DIRECTIONS PANEL (Source & Destination) */}
+      <div className="p-4 border-b theme-card-subtle" style={{ borderColor: 'var(--theme-border)' }}>
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          
+          {/* GMaps Direction Input Box */}
+          <div className="flex-1 bg-white/70 dark:bg-stone-900/70 backdrop-blur-sm rounded-xl p-3 border shadow-warm-sm" style={{ borderColor: 'var(--theme-border)' }}>
+            <div className="flex items-center gap-3">
+              
+              {/* Route Indicator Visual (Green dot -> line -> Red pin) */}
+              <div className="flex flex-col items-center justify-center py-1 self-stretch">
+                <div className="w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white shadow-sm flex items-center justify-center">
+                  <span className="text-[7px] text-white font-bold">A</span>
+                </div>
+                <div className="w-0.5 flex-1 min-h-[22px] border-l-2 border-dashed border-stone-300 dark:border-stone-700 my-1" />
+                <div className="w-3.5 h-3.5 rounded-full bg-rose-600 border-2 border-white shadow-sm flex items-center justify-center">
+                  <span className="text-[7px] text-white font-bold">B</span>
+                </div>
+              </div>
+
+              {/* Source & Destination Text Inputs */}
+              <div className="flex-1 space-y-2">
+                {/* Source Input */}
+                <div className="flex items-center space-x-2">
+                  <label htmlFor="source-input" className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 w-16 shrink-0">
+                    Source:
+                  </label>
+                  <input
+                    id="source-input"
+                    type="text"
+                    value={sourceInput}
+                    onChange={(e) => setSourceInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') applyDirections(sourceInput, destInput);
+                    }}
+                    placeholder="Enter starting city (e.g. Bangalore, Kochi...)"
+                    className="flex-1 text-xs px-2.5 py-1.5 rounded-lg border theme-input font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    style={{ borderColor: 'var(--theme-border)' }}
+                  />
+                </div>
+
+                {/* Destination Input */}
+                <div className="flex items-center space-x-2">
+                  <label htmlFor="destination-input" className="text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 w-16 shrink-0">
+                    Destination:
+                  </label>
+                  <input
+                    id="destination-input"
+                    type="text"
+                    value={destInput}
+                    onChange={(e) => setDestInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') applyDirections(sourceInput, destInput);
+                    }}
+                    placeholder="Destination (e.g. Munnar, Paris...)"
+                    className="flex-1 text-xs px-2.5 py-1.5 rounded-lg border theme-input font-medium focus:outline-none focus:ring-1 focus:ring-rose-500"
+                    style={{ borderColor: 'var(--theme-border)' }}
+                  />
+                </div>
+              </div>
+
+              {/* Action Buttons: Swap & Update */}
+              <div className="flex flex-col items-center gap-1.5 self-center pl-1 border-l" style={{ borderColor: 'var(--theme-border)' }}>
+                <button
+                  type="button"
+                  onClick={handleSwap}
+                  className="p-1.5 rounded-lg theme-card-subtle border hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors text-stone-600 dark:text-stone-300"
+                  title="Swap Origin and Destination"
+                >
+                  <ArrowLeftRight className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyDirections(sourceInput, destInput)}
+                  className="px-2 py-1 text-[11px] font-bold rounded-lg theme-primary-btn shadow-warm-sm flex items-center space-x-1"
+                  title="Update Directions Route"
+                >
+                  <Search className="w-3 h-3" />
+                  <span>Update</span>
+                </button>
+              </div>
+
+            </div>
+
+            {/* Quick Origin Presets Chips */}
+            <div className="mt-2.5 pt-2 border-t flex flex-wrap items-center gap-1 text-[10px]" style={{ borderColor: 'var(--theme-border)' }}>
+              <span className="theme-text-muted font-semibold mr-1">Quick Origins:</span>
+              {quickOriginPresets.map((city) => (
+                <button
+                  key={city}
+                  type="button"
+                  onClick={() => {
+                    setSourceInput(city);
+                    applyDirections(city, destInput);
+                  }}
+                  className={`px-2 py-0.5 rounded-md border text-[10px] font-medium transition-colors ${
+                    sourceInput.toLowerCase() === city.toLowerCase()
+                      ? 'bg-emerald-600 text-white font-bold border-emerald-600'
+                      : 'theme-card-subtle theme-text-muted hover:theme-text'
+                  }`}
+                  style={{ borderColor: 'var(--theme-border)' }}
+                >
+                  {city}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* GMaps Route Distance & Travel Duration Card */}
+          {activeDistance && (
+            <div className="lg:w-72 bg-gradient-to-br from-emerald-500/10 to-blue-500/10 border border-emerald-500/30 rounded-xl p-3 flex flex-col justify-between">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 flex items-center gap-1">
+                  <Car className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Driving Route Metrics</span>
+                </span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded font-mono font-bold bg-emerald-600/20 text-emerald-800 dark:text-emerald-200">
+                  GMaps Live
+                </span>
+              </div>
+
+              <div className="flex items-baseline space-x-2 my-1">
+                <span className="text-2xl font-black font-sans text-stone-900 dark:text-stone-100">
+                  {activeDistance}
+                </span>
+                <span className="text-xs font-bold text-stone-500">km Total Distance</span>
+              </div>
+
+              <div className="flex items-center space-x-1.5 text-xs text-stone-700 dark:text-stone-300 font-medium">
+                <Clock className="w-3.5 h-3.5 text-blue-600" />
+                <span>{activeDuration}</span>
+              </div>
+
+              {/* Exact Coordinates Footer */}
+              <div className="mt-2 pt-1.5 border-t border-emerald-500/20 text-[9px] font-mono text-stone-500 flex justify-between">
+                <span>A: {sourceCoords ? `${sourceCoords[0].toFixed(2)}°, ${sourceCoords[1].toFixed(2)}°` : 'N/A'}</span>
+                <span>➔</span>
+                <span>B: {destCoords ? `${destCoords[0].toFixed(2)}°, ${destCoords[1].toFixed(2)}°` : 'N/A'}</span>
+              </div>
+
+              {/* Plan with Copilot Button */}
+              {onPlanRoute && (
+                <button
+                  type="button"
+                  onClick={() => onPlanRoute(sourceInput, destInput)}
+                  className="mt-2 w-full py-1 text-[11px] font-bold rounded-lg theme-primary-btn flex items-center justify-center space-x-1 shadow-warm-sm"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  <span>Plan Vacation From {sourceInput}</span>
+                </button>
+              )}
+            </div>
+          )}
+
+        </div>
+      </div>
+
+      {/* 2. MAP CONTROLS & MODE TOGGLE */}
+      <div className="p-3 border-b flex flex-wrap items-center justify-between gap-3" style={{ backgroundColor: 'var(--theme-card)', borderColor: 'var(--theme-border)' }}>
         
         {/* Mode Selector */}
         <div className="flex items-center space-x-1 p-1 rounded-xl theme-card-subtle border" style={{ borderColor: 'var(--theme-border)' }}>
@@ -370,7 +931,7 @@ export function TripMap({ itinerary, destination, focusedLocation, onClearFocus 
             }`}
           >
             <Navigation className="w-3.5 h-3.5" />
-            <span>Itinerary Route ({itineraryPoints.length} Stops)</span>
+            <span>Itinerary & Navigation ({itineraryPoints.length} Sights)</span>
           </button>
 
           <button
@@ -456,7 +1017,7 @@ export function TripMap({ itinerary, destination, focusedLocation, onClearFocus 
           <button
             onClick={handleFitBounds}
             className="p-1.5 rounded-lg theme-btn transition-all text-xs shrink-0"
-            title="Fit Map to View All Pins"
+            title="Fit Map to View Full Route"
           >
             <Maximize2 className="w-3.5 h-3.5" />
           </button>
@@ -469,7 +1030,7 @@ export function TripMap({ itinerary, destination, focusedLocation, onClearFocus 
           <div className="flex items-center space-x-2">
             <Eye className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
             <span>
-              Focused on <strong>{focusedLocation.name}</strong> ({focusedLocation.direction} India) • Exact GPS: {focusedLocation.latitude}°N, {focusedLocation.longitude}°E
+              Focused on <strong>{focusedLocation.name}</strong> ({focusedLocation.direction || 'Sight'} Zone) • Exact GPS: {focusedLocation.latitude?.toFixed(4)}°N, {focusedLocation.longitude?.toFixed(4)}°E
             </span>
           </div>
           {onClearFocus && (
@@ -483,10 +1044,10 @@ export function TripMap({ itinerary, destination, focusedLocation, onClearFocus 
         </div>
       )}
 
-      {/* Leaflet Map Canvas */}
-      <div ref={mapContainerRef} className="w-full h-[500px] z-10" />
+      {/* 3. LEAFLET MAP CANVAS */}
+      <div ref={mapContainerRef} className="w-full h-[520px] z-10" />
 
-      {/* Map Legend & Directions Footer */}
+      {/* 4. MAP LEGEND & GMAPS DIRECTIONS FOOTER */}
       <div className="px-4 py-2.5 border-t text-[11px] theme-text-muted flex flex-wrap items-center justify-between gap-2" style={{ backgroundColor: 'var(--theme-card-subtle)', borderColor: 'var(--theme-border)' }}>
         {mapMode === 'cinema' ? (
           <div className="flex flex-wrap items-center space-x-3">
@@ -500,7 +1061,7 @@ export function TripMap({ itinerary, destination, focusedLocation, onClearFocus 
             </div>
             <div className="flex items-center space-x-1">
               <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: DIRECTION_COLORS.South }} />
-              <span>🌴 South (Kerala, Hampi, Ooty, Ramoji)</span>
+              <span>🌴 South (Kerala, Munnar, Hampi, Ooty)</span>
             </div>
             <div className="flex items-center space-x-1">
               <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: DIRECTION_COLORS.West }} />
@@ -513,24 +1074,32 @@ export function TripMap({ itinerary, destination, focusedLocation, onClearFocus 
           </div>
         ) : (
           <div className="flex items-center space-x-3 overflow-x-auto">
-            <span className="font-semibold theme-text flex items-center space-x-1">
-              <Compass className="w-3 h-3" style={{ color: 'var(--theme-primary)' }} />
-              <span>Itinerary Route Trails:</span>
-            </span>
+            <div className="flex items-center space-x-1.5 shrink-0">
+              <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block" />
+              <span className="font-bold text-emerald-700 dark:text-emerald-400">Pin A: Origin ({sourceInput})</span>
+            </div>
+            <div className="flex items-center space-x-1.5 shrink-0">
+              <span className="w-3 h-3 rounded-full bg-rose-600 inline-block" />
+              <span className="font-bold text-rose-700 dark:text-rose-400">Pin B: Destination ({destInput})</span>
+            </div>
+            <div className="flex items-center space-x-1.5 shrink-0">
+              <span className="w-4 h-1 bg-blue-600 inline-block rounded" />
+              <span className="font-medium text-blue-700 dark:text-blue-400">Connecting Highway Polyline</span>
+            </div>
             {uniqueDays.map((d) => (
               <div key={d} className="flex items-center space-x-1 shrink-0">
                 <div
                   className="w-2.5 h-2.5 rounded-full"
                   style={{ backgroundColor: WARM_DAY_COLORS[(d - 1) % WARM_DAY_COLORS.length] }}
                 />
-                <span>Day {d} Route</span>
+                <span>Day {d} Stops</span>
               </div>
             ))}
           </div>
         )}
 
         <div className="text-[10px] opacity-80 flex items-center space-x-1">
-          <span>Click any 🎬 pin to reveal film backstory, scene trivia & exact coordinates</span>
+          <span>Set or change source & destination anytime to recalculate travel distance</span>
         </div>
       </div>
     </div>

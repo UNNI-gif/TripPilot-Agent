@@ -729,26 +729,116 @@ DESTINATION_HUBS: Dict[str, List[Dict[str, Any]]] = {
             "latitude": 26.5775,
             "longitude": 93.1711
         }
+    ],
+    "munnar": [
+        {
+            "name": "Munnar Emerald Tea Estates & Tata Tea Museum",
+            "region": "Idukki District, Kerala",
+            "direction": "South",
+            "tagline": "Endless rolling carpet of emerald green tea bushes, century-old British tea factories & fragrant cardamom valleys.",
+            "must_see_landmarks": [
+                "KDHP Tata Tea Museum & Live Processing",
+                "Pothamedu Cloud Viewpoint",
+                "Mattupetty Dam & Speedboat Lake",
+                "Echo Point Valley",
+                "Attukad Jungle Waterfalls"
+            ],
+            "best_for": "Tea Plantations, Cool Hill Breezes & Scenic Photography",
+            "recommended_stay": "2 - 3 Days",
+            "vibe": "Serene & Lush",
+            "badge": "🎬 Chennai Express & Life of Pi",
+            "movie_locations": [
+                "Chennai Express (Shah Rukh Khan & Deepika 'Kashmir Main Tu Kanyakumari' filmed among Munnar tea terraces)",
+                "Life of Pi (Suraj Sharma overlooking mist-covered green tea slopes)"
+            ],
+            "featured_movie": "Chennai Express",
+            "latitude": 10.0889,
+            "longitude": 77.0595
+        },
+        {
+            "name": "Eravikulam National Park & Anamudi Peak",
+            "region": "Western Ghats, Munnar",
+            "direction": "South",
+            "tagline": "Home to the endangered Nilgiri Tahr and South India's highest peak Anamudi (8,842 ft) with blooming Neelakurinji slopes.",
+            "must_see_landmarks": [
+                "Rajamalai Nilgiri Tahr Sanctuary Walk",
+                "Anamudi Peak Lookout (Highest Peak in South India)",
+                "Lakkam Forest Waterfalls",
+                "Chinnar Wildlife Sanctuary Border",
+                "High-Altitude Shola Forest Ecosystem"
+            ],
+            "best_for": "Rare Wildlife, High-Altitude Walks & Panoramic Vistas",
+            "recommended_stay": "1 - 2 Days",
+            "vibe": "Pristine & Wild",
+            "badge": "Highest Peak in South India",
+            "movie_locations": [
+                "Filmed in numerous wildlife documentaries and Malayalam classics"
+            ],
+            "featured_movie": "Wildlife of Western Ghats",
+            "latitude": 10.2016,
+            "longitude": 77.0425
+        },
+        {
+            "name": "Kolukkumalai Sunrise & Top Station",
+            "region": "Munnar - Tamil Nadu Border",
+            "direction": "South",
+            "tagline": "World's highest orthodox tea plantation at 7,900 ft, offering sunrise above a blanket of swirling clouds.",
+            "must_see_landmarks": [
+                "Kolukkumalai Sunrise Safari by 4x4 Jeep",
+                "Top Station Western Ghats Cloud Viewpoint",
+                "Kundala Boating Lake & Arch Dam",
+                "Meesapulimala Trekking Ridge (Second Highest Peak)",
+                "Organic Artisan Orthodox Tea Tasting"
+            ],
+            "best_for": "Cloud Sunrise, Off-Road Jeep Safaris & Adventure Treks",
+            "recommended_stay": "1 - 2 Days",
+            "vibe": "Epic & Majestic",
+            "badge": "World's Highest Tea Estate",
+            "movie_locations": [
+                "Charlie (Dulquer Salmaan Meesapulimala monologue scene)"
+            ],
+            "featured_movie": "Charlie",
+            "latitude": 10.0863,
+            "longitude": 77.2285
+        }
     ]
 }
 
 
 def get_destination_sightseeing_hubs(destination: str) -> List[Dict[str, Any]]:
     """
-    Returns curated must-visit sightseeing hubs and cities for a destination.
-    If the destination matches known countries, returns rich regional highlights.
-    Otherwise, synthesizes authentic, realistic travel hubs for that destination.
+    Returns curated must-visit sightseeing hubs tailored specifically to the requested place.
+    If the user requests a country broadly ('India'), returns national multi-region hubs.
+    If the user requests a specific city/place ('Munnar', 'Goa', 'Paris', etc.), returns sights strictly for that place.
     """
     dest_clean = destination.strip().lower() if destination else "france"
 
-    # Explicit India aliases
-    india_keywords = ["india", "bharat", "delhi", "mumbai", "goa", "kerala", "manali", "ladakh", "kashmir", "hampi", "ooty", "jaipur", "udaipur", "kolkata", "darjeeling", "bollywood", "tollywood", "chennai", "hyderabad", "bengaluru", "bangalore", "rajasthan", "meghalaya", "assam", "punjab", "himachal", "uttarakhand"]
-    if any(kw in dest_clean for kw in india_keywords):
+    # 1. Exact or partial match in DESTINATION_HUBS keys (excluding general country "india")
+    if "munnar" in dest_clean:
+        return DESTINATION_HUBS["munnar"]
+
+    if dest_clean in DESTINATION_HUBS:
+        return DESTINATION_HUBS[dest_clean]
+
+    # 2. Check if destination is specifically the country "India" as a whole
+    if dest_clean in ["india", "bharat", "indian", "all india", "india movie locations"]:
         return DESTINATION_HUBS["india"]
 
+    # 3. Check for exact hub match inside "india" dataset (e.g. "goa", "manali", "kashmir", "ladakh", "hampi", "ooty", "jaipur", "udaipur", "kolkata", "darjeeling")
+    if "india" in DESTINATION_HUBS:
+        matching_hubs = [
+            h for h in DESTINATION_HUBS["india"]
+            if any(term in dest_clean for term in h["name"].lower().replace("&", "").split())
+            or any(term in dest_clean for term in h["region"].lower().split())
+        ]
+        if matching_hubs:
+            return matching_hubs
+
+    # 4. Check other country keys
     for key, hubs in DESTINATION_HUBS.items():
-        if key in dest_clean or any(h["name"].lower().split()[0] in dest_clean for h in hubs):
+        if key != "india" and (key in dest_clean or dest_clean in key):
             return hubs
+
 
 
     # Universal intelligent generator for any worldwide location

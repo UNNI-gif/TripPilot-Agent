@@ -584,6 +584,119 @@ DESTINATION_KNOWLEDGE = {
                 "tips": "Step inside Maharaja royal train carriages and indoor exhibits showcasing 170 years of Indian rail heritage."
             }
         ]
+    },
+    "munnar": {
+        "landmarks": [
+            {
+                "title": "KDHP Tata Tea Museum & Nallathanni Estate",
+                "location": "Nallathanni Estate, Munnar, Kerala",
+                "category": "Tea Heritage & Tasting",
+                "estimated_cost": "$2",
+                "latitude": 10.0911,
+                "longitude": 77.0543,
+                "tips": "Witness century-old tea manufacturing rollers and sample freshly brewed orthodox black tea."
+            },
+            {
+                "title": "Eravikulam National Park & Anamudi Summit",
+                "location": "Rajamalai, Munnar, Western Ghats",
+                "category": "Wildlife & Alpine Peaks",
+                "estimated_cost": "$4",
+                "latitude": 10.2016,
+                "longitude": 77.0425,
+                "tips": "Spot the endangered Nilgiri Tahr mountain goats grazing on misty rolling slopes near South India's highest peak."
+            },
+            {
+                "title": "Mattupetty Dam, Lake & Echo Point",
+                "location": "Mattupetty, Munnar, Kerala",
+                "category": "Highland Lake & Boating",
+                "estimated_cost": "$3",
+                "latitude": 10.1064,
+                "longitude": 77.1243,
+                "tips": "Take a tranquil speedboat glide across the reflection reservoir surrounded by tea slopes and wild elephant corridors."
+            },
+            {
+                "title": "Kolukkumalai Sunrise Safari (World's Highest Tea Estate)",
+                "location": "Kolukkumalai, Munnar Border",
+                "category": "High Altitude Sunrise & 4x4 Jeep",
+                "estimated_cost": "$18",
+                "latitude": 10.0863,
+                "longitude": 77.2285,
+                "tips": "Board a 4x4 rugged jeep before dawn (4:30 AM) to watch the golden sun pierce through a vast sea of clouds at 7,900 ft."
+            },
+            {
+                "title": "Attukad Waterfalls & Cardamom Forest Trek",
+                "location": "Pallivasal, Munnar",
+                "category": "Jungle Waterfalls & Trekking",
+                "estimated_cost": "Free",
+                "latitude": 10.0558,
+                "longitude": 77.0447,
+                "tips": "Stroll across the wooden suspension footbridge for the premier view of tiered cascades plunging through lush rainforests."
+            },
+            {
+                "title": "Top Station Western Ghats Cloud Viewpoint",
+                "location": "Top Station, Munnar - Theni Border",
+                "category": "Panoramic Valley Vista",
+                "estimated_cost": "$1",
+                "latitude": 10.1247,
+                "longitude": 77.2439,
+                "tips": "Historic transshipment point for tea ropeways, offering a jaw-dropping 360-degree vista of the Tamil Nadu plains below."
+            }
+        ],
+        "dining": [
+            {
+                "name": "Rapsy Restaurant (Munnar Town)",
+                "cuisine": "Authentic Kerala Highland Dishes",
+                "recommended_dish": "Flaky Kerala Malabar Parottas with Spicy Beef/Chicken Roast",
+                "price_range": "$",
+                "latitude": 10.0877,
+                "longitude": 77.0601
+            },
+            {
+                "name": "Saravana Bhavan (Munnar)",
+                "cuisine": "South Indian Vegetarian",
+                "recommended_dish": "Crisp Ghee Roast Paper Dosa & Steaming Filter Coffee",
+                "price_range": "$",
+                "latitude": 10.0882,
+                "longitude": 77.0598
+            },
+            {
+                "name": "Guru's Family Restaurant",
+                "cuisine": "Traditional Malabar Seafood",
+                "recommended_dish": "Karimeen Pollichathu (Pearl Spot Fish wrapped in Banana Leaf)",
+                "price_range": "$$",
+                "latitude": 10.0865,
+                "longitude": 77.0612
+            }
+        ],
+        "rainy_day_landmarks": [
+            {
+                "title": "KDHP Tea Museum Indoor Exhibition & Factory Floor",
+                "location": "Nallathanni, Munnar",
+                "category": "Indoor Tea Processing & Heritage",
+                "estimated_cost": "$2",
+                "latitude": 10.0911,
+                "longitude": 77.0543,
+                "tips": "Stay completely dry inside the historic tea factory watching drying, rolling, and tasting demonstrations."
+            },
+            {
+                "title": "Punarjani Traditional Kathakali & Kalaripayattu Theatre",
+                "location": "Pallivasal, Munnar",
+                "category": "Indoor Cultural Performance",
+                "estimated_cost": "$6",
+                "latitude": 10.0468,
+                "longitude": 77.0261,
+                "tips": "Witness mesmerizing traditional Kerala Kathakali facial expressions and ancient martial arts sheltered indoors."
+            },
+            {
+                "title": "Cinnamon Herbal Spice Garden & Ayurvedic Tasting Pavilion",
+                "location": "Chithirapuram, Munnar",
+                "category": "Sheltered Botanical & Herbal Tasting",
+                "estimated_cost": "$4",
+                "latitude": 10.0612,
+                "longitude": 77.0398,
+                "tips": "Sample hot herbal cardamom tea and explore covered organic spice nurseries under fragrant wooden canopies."
+            }
+        ]
     }
 }
 
@@ -593,15 +706,20 @@ def get_attractions_and_dining(destination: str) -> Dict[str, Any]:
     """
     dest_clean = destination.strip().lower() if destination else "france"
     
-    # India aliases
+    # 1. Exact match in knowledge base (e.g. "munnar", "france", "italy", "japan")
+    if dest_clean in DESTINATION_KNOWLEDGE:
+        return DESTINATION_KNOWLEDGE[dest_clean]
+
+    # 2. Check for specific place matches first
+    for key, data in DESTINATION_KNOWLEDGE.items():
+        if key != "india" and key in dest_clean:
+            return data
+
+    # 3. India country level fallback
     india_aliases = ["india", "bharat", "delhi", "mumbai", "goa", "kerala", "manali", "ladakh", "kashmir", "hampi", "ooty", "jaipur", "udaipur", "kolkata", "darjeeling", "bollywood", "tollywood", "chennai", "hyderabad", "bengaluru", "bangalore", "rajasthan"]
     if any(alias in dest_clean for alias in india_aliases):
         return DESTINATION_KNOWLEDGE["india"]
 
-    # Check knowledge base
-    for key, data in DESTINATION_KNOWLEDGE.items():
-        if key in dest_clean:
-            return data
 
     # Intelligent location-aware generator for any other destination
     dest_title = destination.strip().title() if destination else "Paris, France"
