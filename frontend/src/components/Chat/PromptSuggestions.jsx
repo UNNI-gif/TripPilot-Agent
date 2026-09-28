@@ -1,7 +1,14 @@
 import React from 'react';
-import { Sparkles, MapPin } from 'lucide-react';
+import { Sparkles, MapPin, Compass } from 'lucide-react';
 
 const SUGGESTIONS = [
+  {
+    title: '🥐 France & Romantic Paris',
+    prompt: 'Plan a romantic trip to France with Paris landmarks (Eiffel Tower & Louvre), Seine river cruise, and French Riviera highlights',
+    dest: 'France',
+    days: 7,
+    style: 'romantic'
+  },
   {
     title: '🌸 Kyoto & Arashiyama',
     prompt: 'Plan a 5-day cultural trip to Kyoto with peaceful shrines, bamboo groves, and authentic tea houses under $2,200',
@@ -17,28 +24,32 @@ const SUGGESTIONS = [
     style: 'culinary'
   },
   {
-    title: '🌅 Santorini Cliffside',
-    prompt: 'Design a 3-day romantic retreat to Santorini with whitewashed boutique stays and sunset catamaran cruise',
+    title: '🌅 Santorini & Greek Isles',
+    prompt: 'Design a 4-day romantic retreat to Santorini with whitewashed boutique stays and sunset catamaran cruise',
     dest: 'Santorini',
-    days: 3,
+    days: 4,
     style: 'romantic'
-  },
-  {
-    title: '🥥 Bali Spiritual Haven',
-    prompt: 'Build a 5-day wellness and temple retreat in Ubud with waterfall hikes and organic artisan cuisine',
-    dest: 'Bali',
-    days: 5,
-    style: 'wellness'
   }
 ];
 
 export function PromptSuggestions({ onSelectPrompt }) {
   return (
     <div className="py-2">
-      <div className="flex items-center space-x-2 mb-2 text-xs font-semibold theme-text-muted">
-        <Sparkles className="w-3.5 h-3.5" style={{ color: 'var(--theme-primary)' }} />
-        <span>Handcrafted Trip Inspirations:</span>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center space-x-2 text-xs font-semibold theme-text-muted">
+          <Sparkles className="w-3.5 h-3.5" style={{ color: 'var(--theme-primary)' }} />
+          <span>Handcrafted Trip Inspirations:</span>
+        </div>
+        <button
+          onClick={() => onSelectPrompt('What are the best sightseeing places to visit in France? Give me the top cities and regions to plan our holiday.')}
+          className="text-[11px] font-semibold flex items-center space-x-1 hover:underline"
+          style={{ color: 'var(--theme-primary)' }}
+        >
+          <Compass className="w-3 h-3" />
+          <span>Explore France Sights</span>
+        </button>
       </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
         {SUGGESTIONS.map((item, idx) => (
           <button

@@ -4,10 +4,17 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.api.deps import get_db
 from app.db.models import TripPlan
-from app.agents.schemas import TripPlanResponse
+from app.agents.schemas import TripPlanResponse, SightseeingHub
 from app.agents.trip_agent import trip_agent
+from app.tools.sightseeing_tool import get_destination_sightseeing_hubs
 
 router = APIRouter(prefix="/trips", tags=["Trips"])
+
+@router.get("/sightseeing/hubs", response_model=List[SightseeingHub])
+def get_destination_hubs(destination: str = "France"):
+    """Get curated must-visit sightseeing hubs and cities for a destination."""
+    hubs = get_destination_sightseeing_hubs(destination)
+    return [SightseeingHub(**h) for h in hubs]
 
 @router.get("", response_model=List[dict])
 def list_trips(db: Session = Depends(get_db)):
@@ -34,6 +41,8 @@ def get_trip(trip_id: int, db: Session = Depends(get_db)):
     if not trip:
         raise HTTPException(status_code=404, detail="Trip not found")
 
+    hubs = get_destination_sightseeing_hubs(trip.destination)
+
     return TripPlanResponse(
         id=trip.id,
         title=trip.title,
@@ -44,7 +53,8 @@ def get_trip(trip_id: int, db: Session = Depends(get_db)):
         hotels=trip.hotels or [],
         itinerary=trip.itinerary or [],
         budget=trip.budget or {},
-        key_recommendations=trip.overview.get("local_customs_and_safety", []) if trip.overview else []
+        key_recommendations=trip.overview.get("local_customs_and_safety", []) if trip.overview else [],
+        sightseeing_hubs=[SightseeingHub(**h) for h in hubs]
     )
 
 @router.post("", response_model=TripPlanResponse, status_code=status.HTTP_201_CREATED)

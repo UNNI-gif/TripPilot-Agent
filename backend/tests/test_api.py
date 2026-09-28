@@ -97,3 +97,27 @@ def test_freeform_france_romantic_trip():
     # Check that budget is calculated for the full month
     assert plan["budget"]["total_estimated"] > 2000
 
+def test_sightseeing_hubs():
+    response = client.get("/api/trips/sightseeing/hubs?destination=France")
+    assert response.status_code == 200
+    hubs = response.json()
+    assert len(hubs) >= 4
+    # Paris should be present
+    assert any("Paris" in h["name"] for h in hubs)
+    # Nice / French Riviera should be present
+    assert any("Riviera" in h["name"] or "Nice" in h["name"] for h in hubs)
+    # Check landmarks list
+    paris_hub = next(h for h in hubs if "Paris" in h["name"])
+    assert any("Eiffel" in lm for lm in paris_hub["must_see_landmarks"])
+
+def test_authentic_gps_coordinates():
+    response = client.post("/api/trips/generate?destination=France&duration_days=3")
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data["sightseeing_hubs"]) >= 4
+    # Check that day 1 activity has authentic Paris coordinates
+    first_act = data["itinerary"][0]["activities"][0]
+    assert 48.8 <= first_act["latitude"] <= 48.9
+    assert 2.2 <= first_act["longitude"] <= 2.4
+
+

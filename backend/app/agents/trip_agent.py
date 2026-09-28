@@ -7,13 +7,14 @@ from app.core.logging import logger
 from app.agents.prompts import SYSTEM_PROMPT
 from app.agents.schemas import (
     TripPlanResponse, DayPlan, ActivityItem, MealRecommendation,
-    TripOverview, BudgetBreakdown, FlightOption, HotelOption
+    TripOverview, BudgetBreakdown, FlightOption, HotelOption, SightseeingHub
 )
 from app.tools.flights_tool import search_flights
 from app.tools.hotels_tool import search_hotels
 from app.tools.weather_tool import get_weather_and_packing_tips
 from app.tools.budget_tool import calculate_trip_budget
 from app.tools.places_tool import get_attractions_and_dining
+from app.tools.sightseeing_tool import get_destination_sightseeing_hubs
 
 # Try importing Google GenAI SDK
 try:
@@ -184,7 +185,12 @@ class TripPilotAgent:
         wants_rental = any(w in lower_text for w in ['rental car', 'rent a car', 'road trip', 'driving'])
         wants_cheapest_hotels = is_budget
 
-        planning_keywords = ["plan", "trip", "itinerary", "visit", "travel", "fly", "days", "budget", "vacation", "holiday", "tour", "explore", "hotel", "hotels", "cab", "cabs"]
+        planning_keywords = [
+            "plan", "trip", "itinerary", "visit", "travel", "fly", "days", "budget", "vacation",
+            "holiday", "holidays", "tour", "explore", "hotel", "hotels", "cab", "cabs",
+            "sightseeing", "site-seeing", "see", "places", "attractions", "where to go"
+        ]
+        is_sightseeing_query = any(w in lower_text for w in ["site-seeing", "sightseeing", "places to see", "places to visit", "what to see", "best places", "where to go", "which places"])
         is_planning_request = any(k in lower_text for k in planning_keywords) or bool(destination_hint)
 
         return {
@@ -195,7 +201,8 @@ class TripPilotAgent:
             "wants_rental": wants_rental,
             "wants_cheapest_hotels": wants_cheapest_hotels,
             "is_romantic": is_romantic,
-            "is_planning_request": is_planning_request
+            "is_planning_request": is_planning_request,
+            "is_sightseeing_query": is_sightseeing_query
         }
 
     def _geocode_destination(self, dest: str) -> Tuple[float, float]:
@@ -341,14 +348,30 @@ class TripPilotAgent:
         landmarks = places_raw.get("landmarks", [])
         dining = places_raw.get("dining", [])
 
+        # Fetch authentic destination sightseeing hubs
+        hubs_raw = get_destination_sightseeing_hubs(dest)
+        sightseeing_hubs = [SightseeingHub(**h) for h in hubs_raw]
+
+        import math
+        def resolve_coords(item: Dict[str, Any], slot_idx: int, day_num: int) -> Tuple[float, float]:
+            if item.get("latitude") is not None and item.get("longitude") is not None:
+                return float(item["latitude"]), float(item["longitude"])
+            # Natural urban cluster distribution around destination centroid
+            angle = (day_num * 1.35 + slot_idx * 2.1) % (2 * math.pi)
+            dist_deg = 0.008 + (day_num % 4) * 0.004 + slot_idx * 0.003
+            return round(base_lat + dist_deg * math.cos(angle), 4), round(base_lng + dist_deg * math.sin(angle), 4)
+
         itinerary = []
         for d in range(1, display_days + 1):
             theme = day_themes[(d - 1) % len(day_themes)]
-            day_offset_lat = (d - 1) * 0.007
-            day_offset_lng = (d - 1) * 0.008
 
             lm1 = landmarks[(d * 2 - 2) % len(landmarks)]
             lm2 = landmarks[(d * 2 - 1) % len(landmarks)]
+            dinner_rec = dining[(d - 1) % len(dining)]
+
+            lat1, lng1 = resolve_coords(lm1, 0, d)
+            lat2, lng2 = resolve_coords(lm2, 1, d)
+            lat3, lng3 = resolve_coords(dinner_rec, 2, d)
 
             activities = [
                 ActivityItem(
@@ -359,8 +382,8 @@ class TripPilotAgent:
                     location=lm1.get("location", f"Central {dest}"),
                     category=lm1.get("category", "Culture & Sightseeing"),
                     estimated_cost=lm1.get("estimated_cost", "$20"),
-                    latitude=round(base_lat + day_offset_lat + 0.004, 4),
-                    longitude=round(base_lng + day_offset_lng - 0.003, 4),
+                    latitude=lat1,
+                    longitude=lng1,
                     tips=lm1.get("tips", "Arrive early to beat the crowd and enjoy prime lighting.")
                 ),
                 ActivityItem(
@@ -371,20 +394,20 @@ class TripPilotAgent:
                     location=lm2.get("location", f"Historic District, {dest}"),
                     category=lm2.get("category", "Heritage & Leisure"),
                     estimated_cost=lm2.get("estimated_cost", "Free"),
-                    latitude=round(base_lat + day_offset_lat - 0.002, 4),
-                    longitude=round(base_lng + day_offset_lng + 0.005, 4),
+                    latitude=lat2,
+                    longitude=lng2,
                     tips=lm2.get("tips", "Take time to explore the adjacent pedestrian alleys.")
                 ),
                 ActivityItem(
                     time_slot="Evening",
                     time="07:00 PM - 10:00 PM",
                     title=f"Sunset Panorama & {'Romantic Candlelit Dinner' if is_romantic else 'Evening Ambiance'}",
-                    description=f"Savor golden hour views followed by a dinner experience at a recommended local bistro in {dest}.",
-                    location=f"Scenic Promenade, {dest}",
+                    description=f"Savor golden hour views followed by a dinner experience at {dinner_rec.get('name', 'a recommended local bistro')} in {dest}.",
+                    location=dinner_rec.get("name", f"Scenic Promenade, {dest}"),
                     category="Romance & Dining" if is_romantic else "Dining & Leisure",
                     estimated_cost="$35",
-                    latitude=round(base_lat + day_offset_lat + 0.006, 4),
-                    longitude=round(base_lng + day_offset_lng + 0.001, 4),
+                    latitude=lat3,
+                    longitude=lng3,
                     tips="Reserve a window or outdoor terrace table for romantic twilight views."
                 )
             ]
@@ -435,7 +458,8 @@ class TripPilotAgent:
             hotels=hotels,
             itinerary=itinerary,
             budget=budget,
-            key_recommendations=customs
+            key_recommendations=customs,
+            sightseeing_hubs=sightseeing_hubs
         )
 
     async def run(
@@ -514,11 +538,29 @@ Craft a personalized response with a conversational intro directly acknowledging
             budget_mention = " We selected verified budget-friendly boutique stays to maximize your savings without sacrificing charm." if intent["wants_cheapest_hotels"] else ""
             romantic_mention = " Perfect for you and your fiancé to celebrate your romance!" if intent["is_romantic"] else ""
 
-            reply = (
-                f"I've tailored an unforgettable **{days}-day adventure to {dest}** for you! 🌟{romantic_mention}\n\n"
-                f"We've structured your journey with iconic bucket-list landmarks, intimate scenic promenades, and authentic local dining.{cab_mention}{budget_mention}\n\n"
-                f"Explore the interactive itinerary board, flight options, vetted accommodations, and the comprehensive budget forecast below."
-            )
+            # Top sightseeing hubs highlight
+            hubs_mention = ""
+            if trip_plan.sightseeing_hubs:
+                hubs_list = []
+                for h in trip_plan.sightseeing_hubs[:4]:
+                    top_sights = ", ".join(h.must_see_landmarks[:3])
+                    hubs_list.append(f"• **{h.name}** ({h.badge or h.region}): {h.tagline}\n  - *Must-See Sights:* {top_sights}\n  - *Recommended Stay:* {h.recommended_stay} | *Best for:* {h.best_for}")
+                hubs_mention = f"\n\n🏰 **Essential Sightseeing Places in {dest} to Plan Your Holiday**:\n" + "\n".join(hubs_list)
+
+            if intent.get("is_sightseeing_query"):
+                reply = (
+                    f"Here are the absolute **best places for sightseeing in {dest}** to plan your holidays around! 🗺️✨\n"
+                    f"{hubs_mention}\n\n"
+                    f"I've also synthesized a complete **{days}-day travel itinerary** for {dest} featuring these premier sights.{cab_mention}{budget_mention}\n\n"
+                    f"Check out the **Route Map** tab to see exact geographic pins and route trails, or open the **Must-Visit Places** tab to explore all holiday hubs!"
+                )
+            else:
+                reply = (
+                    f"I've tailored an unforgettable **{days}-day adventure to {dest}** for you! 🌟{romantic_mention}\n\n"
+                    f"We've structured your journey with iconic bucket-list landmarks, intimate scenic promenades, and authentic local dining.{cab_mention}{budget_mention}"
+                    f"{hubs_mention}\n\n"
+                    f"Explore the interactive **Route Map** (now showing authentic landmark pins and connecting route trails), day-by-day plan, hotel recommendations, and the **Must-Visit Places** tab to explore all top holiday hubs!"
+                )
             return reply, trip_plan
         else:
             return (

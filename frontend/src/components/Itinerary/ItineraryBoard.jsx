@@ -5,12 +5,13 @@ import { FlightCard } from '../Overview/FlightCard';
 import { HotelCard } from '../Overview/HotelCard';
 import { BudgetBreakdownCard } from '../Budget/BudgetBreakdownCard';
 import { TripMap } from '../Map/TripMap';
+import { SightseeingHubs } from '../Sightseeing/SightseeingHubs';
 import { ActivityEditModal } from './ActivityEditModal';
 import { Plane, Building2, Calendar, DollarSign, Compass, MapPin } from 'lucide-react';
 
-export function ItineraryBoard({ tripPlan, onUpdateTripPlan }) {
+export function ItineraryBoard({ tripPlan, onUpdateTripPlan, onSendMessage }) {
   const [activeTab, setActiveTab] = useState('all'); // 'all', or 'day-X'
-  const [activeSection, setActiveSection] = useState('itinerary'); // 'itinerary', 'map', 'stays_flights', 'budget'
+  const [activeSection, setActiveSection] = useState('itinerary'); // 'itinerary', 'map', 'sightseeing', 'stays_flights', 'budget'
 
   // Activity Edit Modal State
   const [editModalState, setEditModalState] = useState({
@@ -135,6 +136,23 @@ export function ItineraryBoard({ tripPlan, onUpdateTripPlan }) {
           </button>
 
           <button
+            onClick={() => setActiveSection('sightseeing')}
+            className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+              activeSection === 'sightseeing'
+                ? 'theme-primary-btn shadow-warm-sm'
+                : 'theme-btn'
+            }`}
+          >
+            <Compass className="w-4 h-4" />
+            <span>Must-Visit Places</span>
+            {tripPlan.sightseeing_hubs?.length > 0 && (
+              <span className="text-[10px] px-1.5 py-0.2 rounded-full theme-badge font-sans font-bold">
+                {tripPlan.sightseeing_hubs.length}
+              </span>
+            )}
+          </button>
+
+          <button
             onClick={() => setActiveSection('stays_flights')}
             className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
               activeSection === 'stays_flights'
@@ -207,6 +225,18 @@ export function ItineraryBoard({ tripPlan, onUpdateTripPlan }) {
 
       {activeSection === 'map' && (
         <TripMap itinerary={itinerary} destination={destination} />
+      )}
+
+      {activeSection === 'sightseeing' && (
+        <SightseeingHubs
+          hubs={tripPlan.sightseeing_hubs}
+          destination={destination}
+          onSelectHub={(hub) => {
+            if (onSendMessage) {
+              onSendMessage(`Plan my holiday around ${hub.name} in ${destination}. Include its key sights like ${hub.must_see_landmarks?.slice(0, 2).join(' and ')}.`);
+            }
+          }}
+        />
       )}
 
       {activeSection === 'stays_flights' && (

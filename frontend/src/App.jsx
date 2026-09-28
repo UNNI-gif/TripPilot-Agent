@@ -81,6 +81,7 @@ export default function App() {
           <ItineraryBoard
             tripPlan={currentTrip}
             onUpdateTripPlan={updateCurrentTrip}
+            onSendMessage={sendMessage}
           />
         </div>
 

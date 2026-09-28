@@ -67,6 +67,16 @@ class TripOverview(BaseModel):
     packing_list: List[str] = Field(default_factory=list, description="Recommended items to pack")
     local_customs_and_safety: List[str] = Field(default_factory=list, description="Key local cultural etiquette & safety tips")
 
+class SightseeingHub(BaseModel):
+    name: str = Field(..., description="Name of the place, city, or scenic region (e.g. 'Paris', 'French Riviera (Nice)', 'Loire Valley')")
+    region: str = Field(..., description="Region, State, or Area")
+    tagline: str = Field(..., description="Short evocative summary of what makes it special")
+    must_see_landmarks: List[str] = Field(default_factory=list, description="Top 3-4 famous sightseeing attractions")
+    best_for: str = Field(..., description="Ideal traveler interests, e.g. 'Romance, Art & History'")
+    recommended_stay: str = Field(..., description="Ideal duration, e.g. '4 - 5 Days'")
+    vibe: str = Field("Iconic", description="Travel vibe")
+    badge: Optional[str] = Field(None, description="e.g. 'Must-Visit Capital', 'Coastal Paradise', 'Wine & Châteaux'")
+
 class TripPlanResponse(BaseModel):
     id: Optional[int] = None
     title: str = Field(..., description="Inspiring trip title")
@@ -78,6 +88,7 @@ class TripPlanResponse(BaseModel):
     itinerary: List[DayPlan] = Field(default_factory=list)
     budget: BudgetBreakdown
     key_recommendations: List[str] = Field(default_factory=list)
+    sightseeing_hubs: List[SightseeingHub] = Field(default_factory=list)
 
 class ChatRequest(BaseModel):
     message: str

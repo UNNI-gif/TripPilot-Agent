@@ -8,13 +8,17 @@ DESTINATION_KNOWLEDGE = {
                 "location": "Champ de Mars, 7th Arrondissement, Paris",
                 "category": "Iconic Landmark",
                 "estimated_cost": "$28",
-                "tips": "Book the summit elevator ticket 3 weeks ahead for the golden hour sunset views over the Seine."
+                "latitude": 48.8584,
+                "longitude": 2.2945,
+                "tips": "Book the summit elevator ticket 3 weeks ahead for golden hour sunset views over the Seine."
             },
             {
                 "title": "Musée du Louvre & Tuileries Royal Garden",
                 "location": "Rue de Rivoli, Paris",
                 "category": "Art & History",
                 "estimated_cost": "$22",
+                "latitude": 48.8606,
+                "longitude": 2.3376,
                 "tips": "Enter through the Carrousel du Louvre underground mall entrance to skip the glass pyramid line."
             },
             {
@@ -22,6 +26,8 @@ DESTINATION_KNOWLEDGE = {
                 "location": "Versailles, Île-de-France",
                 "category": "Royal Heritage",
                 "estimated_cost": "$30",
+                "latitude": 48.8049,
+                "longitude": 2.1204,
                 "tips": "Hire a private cab or express RER C train early morning to stroll the fountain gardens before crowds."
             },
             {
@@ -29,21 +35,81 @@ DESTINATION_KNOWLEDGE = {
                 "location": "Montmartre Hill, 18th Arrondissement, Paris",
                 "category": "Culture & Romance",
                 "estimated_cost": "Free",
+                "latitude": 48.8867,
+                "longitude": 2.3431,
                 "tips": "Explore the quiet cobblestone vineyards behind Sacré-Cœur for romantic couple photo spots."
             },
             {
-                "title": "Sunset Cruise on the River Seine",
+                "title": "Sunset Cruise on the River Seine (Pont Neuf)",
                 "location": "Pont Neuf / Port de la Bourdonnais, Paris",
                 "category": "Romance & Scenic",
                 "estimated_cost": "$18",
+                "latitude": 48.8566,
+                "longitude": 2.3413,
                 "tips": "Time your boarding 30 minutes before twilight to watch the city of light illuminate."
             },
             {
-                "title": "Promenade des Anglais & Old Town (Vieux Nice)",
+                "title": "Arc de Triomphe & Champs-Élysées Promenade",
+                "location": "Place Charles de Gaulle, Paris",
+                "category": "Monument & Vistas",
+                "estimated_cost": "$16",
+                "latitude": 48.8738,
+                "longitude": 2.2950,
+                "tips": "Climb the rooftop terrace for the most symmetrical star vista radiating across Paris."
+            },
+            {
+                "title": "Sainte-Chapelle & Notre-Dame Historic Island",
+                "location": "Île de la Cité, Paris",
+                "category": "Gothic Architecture",
+                "estimated_cost": "$13",
+                "latitude": 48.8554,
+                "longitude": 2.3450,
+                "tips": "Visit between 11 AM and 2 PM on a sunny day when sunlight turns the 13th-century stained glass radiant."
+            },
+            {
+                "title": "Musée d'Orsay & Left Bank Promenade",
+                "location": "Esplanade Valéry Giscard d'Estaing, Paris",
+                "category": "Impressionist Art",
+                "estimated_cost": "$19",
+                "latitude": 48.8599,
+                "longitude": 2.3266,
+                "tips": "Check out the giant station clock face on the top floor with views framed over Sacré-Cœur."
+            },
+            {
+                "title": "Jardin du Luxembourg & Latin Quarter",
+                "location": "6th Arrondissement, Paris",
+                "category": "Royal Gardens & Leisure",
+                "estimated_cost": "Free",
+                "latitude": 48.8462,
+                "longitude": 2.3372,
+                "tips": "Sit beside the Medici Fountain with fresh pastries for classic Parisian people-watching."
+            },
+            {
+                "title": "Le Marais & Place des Vosges Heritage Walk",
+                "location": "4th Arrondissement, Paris",
+                "category": "Historic Boutiques",
+                "estimated_cost": "Free",
+                "latitude": 48.8554,
+                "longitude": 2.3656,
+                "tips": "Wander through the vaulted brick arcades of Paris's oldest planned royal square."
+            },
+            {
+                "title": "Promenade des Anglais & Old Town (Nice, Riviera)",
                 "location": "French Riviera (Côte d'Azur), Nice",
                 "category": "Coastal Leisure",
                 "estimated_cost": "Free",
+                "latitude": 43.6952,
+                "longitude": 7.2656,
                 "tips": "Sample fresh socca flatbreads from local market stalls along the sun-washed Mediterranean promenade."
+            },
+            {
+                "title": "Colline du Château & Baie des Anges Viewpoint",
+                "location": "Castle Hill, Nice, French Riviera",
+                "category": "Panoramic Viewpoint",
+                "estimated_cost": "Free",
+                "latitude": 43.6948,
+                "longitude": 7.2805,
+                "tips": "Ascend the winding stone stairs or free art-deco lift for the premier panoramic view of the azure bay."
             }
         ],
         "dining": [
@@ -51,19 +117,41 @@ DESTINATION_KNOWLEDGE = {
                 "name": "Le Coupe-Chou (Latin Quarter)",
                 "cuisine": "Romantic French Classic",
                 "recommended_dish": "Boeuf Bourguignon & Candlelit Crème Brûlée",
-                "price_range": "$$"
+                "price_range": "$$",
+                "latitude": 48.8488,
+                "longitude": 2.3491
             },
             {
                 "name": "Bistrot Paul Bert",
                 "cuisine": "Authentic Parisian Bistro",
                 "recommended_dish": "Filet au Poivre & Tarte Tatin",
-                "price_range": "$$"
+                "price_range": "$$",
+                "latitude": 48.8533,
+                "longitude": 2.3842
             },
             {
                 "name": "Crêperie Brocéliande (Montmartre)",
                 "cuisine": "Artisan Galettes & Cider",
                 "recommended_dish": "Savory Buckwheat Galette & Sweet Salted Caramel Crêpe",
-                "price_range": "$"
+                "price_range": "$",
+                "latitude": 48.8842,
+                "longitude": 2.3385
+            },
+            {
+                "name": "Café de Flore (Saint-Germain)",
+                "cuisine": "Historic Parisian Café",
+                "recommended_dish": "Hot Chocolate & Pain au Chocolat",
+                "price_range": "$$",
+                "latitude": 48.8540,
+                "longitude": 2.3328
+            },
+            {
+                "name": "La Petite Maison (Nice French Riviera)",
+                "cuisine": "Provençal Mediterranean Seafood",
+                "recommended_dish": "Grilled Sea Bass, Ratatouille & Local Chilled Rosé",
+                "price_range": "$$$",
+                "latitude": 43.6961,
+                "longitude": 7.2755
             }
         ]
     },
@@ -74,6 +162,8 @@ DESTINATION_KNOWLEDGE = {
                 "location": "Piazza del Colosseo, Rome",
                 "category": "Ancient History",
                 "estimated_cost": "$24",
+                "latitude": 41.8902,
+                "longitude": 12.4922,
                 "tips": "Book the underground arena floor ticket for an intimate historical walk."
             },
             {
@@ -81,6 +171,8 @@ DESTINATION_KNOWLEDGE = {
                 "location": "Vatican City, Rome",
                 "category": "Renaissance Art",
                 "estimated_cost": "$28",
+                "latitude": 41.9029,
+                "longitude": 12.4534,
                 "tips": "Arrive for the early morning access before tourist groups arrive."
             },
             {
@@ -88,7 +180,36 @@ DESTINATION_KNOWLEDGE = {
                 "location": "Piazza del Duomo, Florence",
                 "category": "Architecture",
                 "estimated_cost": "$20",
+                "latitude": 43.7731,
+                "longitude": 11.2560,
                 "tips": "Climb Brunelleschi's dome for the ultimate panorama of Tuscany's red-tile roofs."
+            },
+            {
+                "title": "Ponte Vecchio & Uffizi Gallery",
+                "location": "Piazzale degli Uffizi, Florence",
+                "category": "Renaissance Heritage",
+                "estimated_cost": "$25",
+                "latitude": 43.7687,
+                "longitude": 11.2533,
+                "tips": "Admire Botticelli's Birth of Venus then stroll across the historic goldsmiths bridge."
+            },
+            {
+                "title": "St. Mark's Basilica & Venetian Gondola Tour",
+                "location": "Piazza San Marco, Venice",
+                "category": "Unique Heritage",
+                "estimated_cost": "$35",
+                "latitude": 45.4342,
+                "longitude": 12.3388,
+                "tips": "Take a sunset gondola glide into the quiet secondary canals away from the Grand Canal boat wake."
+            },
+            {
+                "title": "Positano Cliffside & Marina Promenade (Amalfi)",
+                "location": "Amalfi Coast, Campania",
+                "category": "Coastal Romance",
+                "estimated_cost": "Free",
+                "latitude": 40.6281,
+                "longitude": 14.4850,
+                "tips": "Enjoy sunset limoncello spritz overlooking the pastel homes cascading into the sea."
             }
         ],
         "dining": [
@@ -96,13 +217,109 @@ DESTINATION_KNOWLEDGE = {
                 "name": "Trattoria Da Enzo al 29 (Trastevere)",
                 "cuisine": "Roman Trattoria",
                 "recommended_dish": "Handmade Cacio e Pepe & Tiramisu",
-                "price_range": "$$"
+                "price_range": "$$",
+                "latitude": 41.8885,
+                "longitude": 12.4782
             },
             {
-                "name": "All'Antico Vinaio",
+                "name": "All'Antico Vinaio (Florence)",
                 "cuisine": "Artisan Panini",
                 "recommended_dish": "Tuscan Prosciutto & Truffle Cream Schiacciata",
-                "price_range": "$"
+                "price_range": "$",
+                "latitude": 43.7684,
+                "longitude": 11.2575
+            },
+            {
+                "name": "Cantina Do Mori (Venice)",
+                "cuisine": "Venetian Cicchetti & Wine",
+                "recommended_dish": "Baccalà Mantecato & Local Prosecco",
+                "price_range": "$$",
+                "latitude": 45.4387,
+                "longitude": 12.3347
+            }
+        ]
+    },
+    "japan": {
+        "landmarks": [
+            {
+                "title": "Fushimi Inari-taisha & 10,000 Torii Gates",
+                "location": "Fushimi Ward, Kyoto",
+                "category": "Spiritual Shrine",
+                "estimated_cost": "Free",
+                "latitude": 34.9671,
+                "longitude": 135.7727,
+                "tips": "Hike past the halfway point (Yotsutsuji intersection) for serene photography without crowds."
+            },
+            {
+                "title": "Kinkaku-ji (The Golden Pavilion)",
+                "location": "Kita Ward, Kyoto",
+                "category": "Zen Heritage",
+                "estimated_cost": "$5",
+                "latitude": 35.0394,
+                "longitude": 135.7292,
+                "tips": "Witness the gilded pavilion reflect over Mirror Pond in the morning sun."
+            },
+            {
+                "title": "Kiyomizu-dera Temple & Higashiyama Streets",
+                "location": "Higashiyama Ward, Kyoto",
+                "category": "Ancient Culture",
+                "estimated_cost": "$4",
+                "latitude": 34.9949,
+                "longitude": 135.7850,
+                "tips": "Stroll down Ninenzaka and Sannenzaka preservation cobblestone alleys."
+            },
+            {
+                "title": "Arashiyama Bamboo Grove & Tenryu-ji",
+                "location": "Ukyo Ward, Kyoto",
+                "category": "Nature & Zen",
+                "estimated_cost": "$6",
+                "latitude": 35.0169,
+                "longitude": 135.6713,
+                "tips": "Arrive at 7:30 AM to hear the gentle swaying bamboo stalks in peaceful solitude."
+            },
+            {
+                "title": "Shibuya Crossing & Meiji Jingu Shrine",
+                "location": "Shibuya, Tokyo",
+                "category": "Modern & Sacred",
+                "estimated_cost": "Free",
+                "latitude": 35.6595,
+                "longitude": 139.7005,
+                "tips": "Experience the world's busiest pedestrian crossing, then retreat to the quiet forested shrine."
+            },
+            {
+                "title": "Senso-ji Temple & Asakusa Nakamise Street",
+                "location": "Taito City, Tokyo",
+                "category": "Historic Tokyo",
+                "estimated_cost": "Free",
+                "latitude": 35.7148,
+                "longitude": 139.7967,
+                "tips": "Sample freshly made warm ningyo-yaki bean-paste cakes along the lantern-lit market street."
+            }
+        ],
+        "dining": [
+            {
+                "name": "Gion Karyo (Kyoto)",
+                "cuisine": "Seasonal Kaiseki Dining",
+                "recommended_dish": "Multi-course seasonal Kyoto banquet & dashi broth",
+                "price_range": "$$$",
+                "latitude": 35.0037,
+                "longitude": 135.7758
+            },
+            {
+                "name": "Ichiran Ramen (Shibuya, Tokyo)",
+                "cuisine": "Tonkotsu Ramen",
+                "recommended_dish": "Custom rich broth tonkotsu ramen with spicy red sauce",
+                "price_range": "$",
+                "latitude": 35.6618,
+                "longitude": 139.7008
+            },
+            {
+                "name": "Nishiki Market Street Food Tour",
+                "cuisine": "Kyoto Street Delicacies",
+                "recommended_dish": "Fresh sashimi skewers, tamagoyaki & matcha soft serve",
+                "price_range": "$",
+                "latitude": 35.0050,
+                "longitude": 135.7649
             }
         ]
     }
@@ -110,7 +327,7 @@ DESTINATION_KNOWLEDGE = {
 
 def get_attractions_and_dining(destination: str) -> Dict[str, Any]:
     """
-    Returns prominent landmarks and dining experiences tailored to the destination.
+    Returns prominent landmarks and dining experiences with authentic GPS coordinates tailored to the destination.
     """
     dest_clean = destination.strip().lower() if destination else "france"
     
@@ -128,6 +345,8 @@ def get_attractions_and_dining(destination: str) -> Dict[str, Any]:
                 "location": f"Central District, {dest_title}",
                 "category": "Culture & Heritage",
                 "estimated_cost": "Free",
+                "latitude": None,
+                "longitude": None,
                 "tips": "Begin your exploration in the early morning for peaceful photography."
             },
             {
@@ -135,6 +354,8 @@ def get_attractions_and_dining(destination: str) -> Dict[str, Any]:
                 "location": f"Observation Point, {dest_title}",
                 "category": "Sightseeing & Romance",
                 "estimated_cost": "$20",
+                "latitude": None,
+                "longitude": None,
                 "tips": "Book tickets during sunset to witness the twilight skyline."
             },
             {
@@ -142,6 +363,8 @@ def get_attractions_and_dining(destination: str) -> Dict[str, Any]:
                 "location": f"Market District, {dest_title}",
                 "category": "Nature & Leisure",
                 "estimated_cost": "$10",
+                "latitude": None,
+                "longitude": None,
                 "tips": "Sample regional specialty delicacies from traditional local vendors."
             }
         ],
@@ -150,19 +373,25 @@ def get_attractions_and_dining(destination: str) -> Dict[str, Any]:
                 "name": f"Le Bistro Traditionnel ({dest_title})",
                 "cuisine": "Regional Cuisine & Wine",
                 "recommended_dish": "Signature Chef Tasting Plate",
-                "price_range": "$$"
+                "price_range": "$$",
+                "latitude": None,
+                "longitude": None
             },
             {
                 "name": f"The Old Town Artisan Eatery",
                 "cuisine": "Local Street Flavors",
                 "recommended_dish": "Handcrafted Regional Dish",
-                "price_range": "$"
+                "price_range": "$",
+                "latitude": None,
+                "longitude": None
             },
             {
                 "name": f"Belvedere Sunset Terrace",
                 "cuisine": "Contemporary Fusion",
                 "recommended_dish": "Fresh Local Harvest & Desserts",
-                "price_range": "$$"
+                "price_range": "$$",
+                "latitude": None,
+                "longitude": None
             }
         ]
     }
