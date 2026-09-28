@@ -19,40 +19,35 @@ export function BudgetBreakdownCard({ budget, durationDays }) {
       name: 'Flights & Transit',
       amount: conv(budget.flights_transit),
       percent: Math.round((budget.flights_transit / baseTotal) * 100),
-      color: 'bg-sky-500',
-      textColor: 'text-sky-400',
+      color: 'bg-terracotta-500',
       icon: Plane,
     },
     {
       name: 'Accommodations',
       amount: conv(budget.accommodation),
       percent: Math.round((budget.accommodation / baseTotal) * 100),
-      color: 'bg-indigo-500',
-      textColor: 'text-indigo-400',
+      color: 'bg-ochre-500',
       icon: Hotel,
     },
     {
-      name: 'Dining & Culinary',
+      name: 'Dining & Gastronomy',
       amount: conv(budget.food_dining),
       percent: Math.round((budget.food_dining / baseTotal) * 100),
-      color: 'bg-amber-500',
-      textColor: 'text-amber-400',
+      color: 'bg-sage-600',
       icon: Utensils,
     },
     {
       name: 'Activities & Passes',
       amount: conv(budget.activities_tickets),
       percent: Math.round((budget.activities_tickets / baseTotal) * 100),
-      color: 'bg-emerald-500',
-      textColor: 'text-emerald-400',
+      color: 'bg-amber-600',
       icon: ShoppingBag,
     },
     {
       name: 'Emergency & Buffer',
       amount: conv(budget.misc_buffer),
       percent: Math.round((budget.misc_buffer / baseTotal) * 100),
-      color: 'bg-purple-500',
-      textColor: 'text-purple-400',
+      color: 'bg-stone-500',
       icon: ShieldCheck,
     },
   ];
@@ -60,20 +55,20 @@ export function BudgetBreakdownCard({ budget, durationDays }) {
   const perDayCost = durationDays ? Math.round(convertedTotal / durationDays) : 0;
 
   return (
-    <div className="glass-panel rounded-2xl p-5 sm:p-6 shadow-xl border border-slate-800">
+    <div className="theme-card rounded-2xl p-5 sm:p-7 shadow-warm border">
       
       {/* Header with grand total & currency switcher */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-5 mb-5 border-b border-slate-800 gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-5 mb-5 border-b gap-4" style={{ borderColor: 'var(--theme-border)' }}>
         <div>
-          <div className="flex items-center space-x-2 text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-1">
+          <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--theme-primary)' }}>
             <PieChart className="w-4 h-4" />
             <span>Smart Expense Forecast</span>
           </div>
-          <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+          <h3 className="text-xl sm:text-2xl font-bold font-serif theme-text tracking-tight">
             Comprehensive Trip Budget
           </h3>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Calculated for balanced pacing, central stays, and verified experiences.
+          <p className="text-xs theme-text-muted mt-0.5">
+            Calculated for balanced pacing, central stays, and authentic experiences.
           </p>
         </div>
 
@@ -83,19 +78,19 @@ export function BudgetBreakdownCard({ budget, durationDays }) {
             onSelectCurrency={setSelectedCurrency}
           />
 
-          <div className="flex items-center space-x-4 bg-slate-900/90 p-3.5 rounded-xl border border-slate-800">
+          <div className="flex items-center space-x-4 theme-card-subtle p-3.5 rounded-xl border shadow-warm-sm" style={{ borderColor: 'var(--theme-border)' }}>
             <div>
-              <div className="text-[10px] text-slate-400 uppercase font-semibold">Total Estimated</div>
-              <div className="text-xl sm:text-2xl font-black text-emerald-400">
+              <div className="text-[10px] theme-text-muted uppercase font-bold tracking-wider">Total Estimated</div>
+              <div className="text-xl sm:text-2xl font-black font-serif" style={{ color: 'var(--theme-primary)' }}>
                 {symbol}{convertedTotal.toLocaleString()}{' '}
-                <span className="text-xs font-normal text-slate-400">{selectedCurrency}</span>
+                <span className="text-xs font-normal theme-text-muted">{selectedCurrency}</span>
               </div>
             </div>
             {durationDays && (
-              <div className="pl-4 border-l border-slate-800">
-                <div className="text-[10px] text-slate-400 uppercase font-semibold">Per Day</div>
-                <div className="text-lg font-bold text-slate-200">
-                  {symbol}{perDayCost} <span className="text-xs font-normal text-slate-400">/day</span>
+              <div className="pl-4 border-l" style={{ borderColor: 'var(--theme-border)' }}>
+                <div className="text-[10px] theme-text-muted uppercase font-bold tracking-wider">Per Day</div>
+                <div className="text-lg font-bold font-serif theme-text">
+                  {symbol}{perDayCost} <span className="text-xs font-normal theme-text-muted">/day</span>
                 </div>
               </div>
             )}
@@ -105,7 +100,7 @@ export function BudgetBreakdownCard({ budget, durationDays }) {
 
       {/* Progress Breakdown Bar */}
       <div className="mb-6">
-        <div className="h-3 w-full bg-slate-800 rounded-full overflow-hidden flex shadow-inner">
+        <div className="h-3 w-full theme-card-subtle rounded-full overflow-hidden flex shadow-inner border" style={{ borderColor: 'var(--theme-border)' }}>
           {categories.map((cat, idx) => (
             <div
               key={idx}
@@ -115,10 +110,10 @@ export function BudgetBreakdownCard({ budget, durationDays }) {
             />
           ))}
         </div>
-        <div className="flex flex-wrap items-center justify-between gap-2 mt-2 text-[11px] text-slate-400">
+        <div className="flex flex-wrap items-center justify-between gap-2 mt-2.5 text-[11px] theme-text-muted">
           {categories.map((cat, idx) => (
-            <div key={idx} className="flex items-center space-x-1.5">
-              <div className={`w-2 h-2 rounded-full ${cat.color}`} />
+            <div key={idx} className="flex items-center space-x-1.5 font-medium">
+              <div className={`w-2.5 h-2.5 rounded-full ${cat.color}`} />
               <span>{cat.name} ({cat.percent}%)</span>
             </div>
           ))}
@@ -130,17 +125,17 @@ export function BudgetBreakdownCard({ budget, durationDays }) {
         {categories.map((cat, idx) => {
           const IconComp = cat.icon;
           return (
-            <div key={idx} className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between">
+            <div key={idx} className="p-3.5 rounded-xl theme-card-subtle border flex items-center justify-between shadow-warm-sm" style={{ borderColor: 'var(--theme-border)' }}>
               <div className="flex items-center space-x-3">
-                <div className={`w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center ${cat.textColor}`}>
-                  <IconComp className="w-4 h-4" />
+                <div className="w-8 h-8 rounded-lg theme-card flex items-center justify-center border shadow-warm-sm" style={{ borderColor: 'var(--theme-border)' }}>
+                  <IconComp className="w-4 h-4" style={{ color: 'var(--theme-primary)' }} />
                 </div>
                 <div>
-                  <div className="text-xs font-medium text-slate-300">{cat.name}</div>
-                  <div className="text-[10px] text-slate-500">{cat.percent}% of budget</div>
+                  <div className="text-xs font-bold theme-text">{cat.name}</div>
+                  <div className="text-[10px] theme-text-muted">{cat.percent}% of total</div>
                 </div>
               </div>
-              <div className={`text-sm font-bold ${cat.textColor}`}>
+              <div className="text-sm font-bold font-serif" style={{ color: 'var(--theme-primary)' }}>
                 {symbol}{cat.amount?.toLocaleString()}
               </div>
             </div>

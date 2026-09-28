@@ -6,7 +6,7 @@ import { HotelCard } from '../Overview/HotelCard';
 import { BudgetBreakdownCard } from '../Budget/BudgetBreakdownCard';
 import { TripMap } from '../Map/TripMap';
 import { ActivityEditModal } from './ActivityEditModal';
-import { Plane, Building2, Calendar, DollarSign, Compass, MapPin, Layers } from 'lucide-react';
+import { Plane, Building2, Calendar, DollarSign, Compass, MapPin } from 'lucide-react';
 
 export function ItineraryBoard({ tripPlan, onUpdateTripPlan }) {
   const [activeTab, setActiveTab] = useState('all'); // 'all', or 'day-X'
@@ -22,15 +22,15 @@ export function ItineraryBoard({ tripPlan, onUpdateTripPlan }) {
 
   if (!tripPlan) {
     return (
-      <div className="h-full flex flex-col items-center justify-center p-8 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-900/20">
-        <div className="w-16 h-16 rounded-2xl bg-slate-800/80 border border-slate-700/60 flex items-center justify-center mb-4 text-sky-400">
-          <Compass className="w-8 h-8 animate-pulse" />
+      <div className="h-full flex flex-col items-center justify-center p-8 text-center border-2 border-dashed rounded-2xl theme-card-subtle" style={{ borderColor: 'var(--theme-border)' }}>
+        <div className="w-16 h-16 rounded-2xl theme-badge flex items-center justify-center mb-4 shadow-warm-sm">
+          <Compass className="w-8 h-8 animate-pulse" style={{ color: 'var(--theme-primary)' }} />
         </div>
-        <h3 className="text-lg font-bold text-slate-200 mb-1">
-          No Active Itinerary Loaded
+        <h3 className="text-xl font-bold font-serif theme-text mb-1.5">
+          No Active Journey Loaded
         </h3>
-        <p className="text-xs text-slate-400 max-w-md">
-          Chat with the TripPilot Copilot on the left or select a sample destination to generate your complete travel dossier.
+        <p className="text-xs theme-text-muted max-w-md leading-relaxed">
+          Chat with the TripPilot Copilot on the left or select one of our curated trip inspirations to generate your comprehensive travel dossier.
         </p>
       </div>
     );
@@ -71,10 +71,8 @@ export function ItineraryBoard({ tripPlan, onUpdateTripPlan }) {
       if (day.day_number === dayNumber) {
         let newActivities = [...(day.activities || [])];
         if (activityIndex === -1) {
-          // Add new
           newActivities.push(updatedActivity);
         } else {
-          // Update existing
           newActivities[activityIndex] = updatedActivity;
         }
         return { ...day, activities: newActivities };
@@ -110,14 +108,14 @@ export function ItineraryBoard({ tripPlan, onUpdateTripPlan }) {
       <TripOverviewCard overview={overview} title={title} durationDays={duration_days} />
 
       {/* Navigation Sub-Tabs */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b pb-3" style={{ borderColor: 'var(--theme-border)' }}>
         <div className="flex items-center space-x-1 sm:space-x-2">
           <button
             onClick={() => setActiveSection('itinerary')}
-            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+            className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
               activeSection === 'itinerary'
-                ? 'bg-sky-500 text-white shadow-md shadow-sky-500/20'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                ? 'theme-primary-btn shadow-warm-sm'
+                : 'theme-btn'
             }`}
           >
             <Calendar className="w-4 h-4" />
@@ -126,22 +124,22 @@ export function ItineraryBoard({ tripPlan, onUpdateTripPlan }) {
 
           <button
             onClick={() => setActiveSection('map')}
-            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+            className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
               activeSection === 'map'
-                ? 'bg-sky-500 text-white shadow-md shadow-sky-500/20'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                ? 'theme-primary-btn shadow-warm-sm'
+                : 'theme-btn'
             }`}
           >
-            <MapPin className="w-4 h-4 text-emerald-400" />
+            <MapPin className="w-4 h-4" />
             <span>Route Map</span>
           </button>
 
           <button
             onClick={() => setActiveSection('stays_flights')}
-            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+            className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
               activeSection === 'stays_flights'
-                ? 'bg-sky-500 text-white shadow-md shadow-sky-500/20'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                ? 'theme-primary-btn shadow-warm-sm'
+                : 'theme-btn'
             }`}
           >
             <Plane className="w-4 h-4" />
@@ -150,10 +148,10 @@ export function ItineraryBoard({ tripPlan, onUpdateTripPlan }) {
 
           <button
             onClick={() => setActiveSection('budget')}
-            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+            className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
               activeSection === 'budget'
-                ? 'bg-sky-500 text-white shadow-md shadow-sky-500/20'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                ? 'theme-primary-btn shadow-warm-sm'
+                : 'theme-btn'
             }`}
           >
             <DollarSign className="w-4 h-4" />
@@ -166,10 +164,10 @@ export function ItineraryBoard({ tripPlan, onUpdateTripPlan }) {
           <div className="flex items-center space-x-1 overflow-x-auto py-1">
             <button
               onClick={() => setActiveTab('all')}
-              className={`px-2.5 py-1 text-xs font-medium rounded-md transition-all ${
+              className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
                 activeTab === 'all'
-                  ? 'bg-slate-700 text-white border border-slate-600'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'theme-active-item font-bold'
+                  : 'theme-text-muted hover:theme-text'
               }`}
             >
               All Days
@@ -178,10 +176,10 @@ export function ItineraryBoard({ tripPlan, onUpdateTripPlan }) {
               <button
                 key={d.day_number}
                 onClick={() => setActiveTab(`day-${d.day_number}`)}
-                className={`px-2.5 py-1 text-xs font-medium rounded-md transition-all ${
+                className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
                   activeTab === `day-${d.day_number}`
-                    ? 'bg-slate-700 text-white border border-slate-600'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'theme-active-item font-bold'
+                    : 'theme-text-muted hover:theme-text'
                 }`}
               >
                 Day {d.day_number}
@@ -216,8 +214,8 @@ export function ItineraryBoard({ tripPlan, onUpdateTripPlan }) {
           {/* Flights */}
           {flights && flights.length > 0 && (
             <div>
-              <div className="flex items-center space-x-2 text-sm font-bold text-white mb-3">
-                <Plane className="w-4 h-4 text-sky-400" />
+              <div className="flex items-center space-x-2 text-sm font-bold font-serif theme-text mb-3">
+                <Plane className="w-4 h-4" style={{ color: 'var(--theme-primary)' }} />
                 <span>Recommended Flight Options</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -231,8 +229,8 @@ export function ItineraryBoard({ tripPlan, onUpdateTripPlan }) {
           {/* Stays */}
           {hotels && hotels.length > 0 && (
             <div>
-              <div className="flex items-center space-x-2 text-sm font-bold text-white mb-3">
-                <Building2 className="w-4 h-4 text-indigo-400" />
+              <div className="flex items-center space-x-2 text-sm font-bold font-serif theme-text mb-3">
+                <Building2 className="w-4 h-4" style={{ color: 'var(--theme-accent)' }} />
                 <span>Curated Hotels & Boutique Stays</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

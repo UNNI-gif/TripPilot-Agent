@@ -41,62 +41,63 @@ export function ChatBox({ messages, isLoading, agentStatus, onSendMessage }) {
   const renderToolIcon = (tool) => {
     switch (tool) {
       case 'search_flights':
-        return <Plane className="w-3.5 h-3.5 text-sky-400 animate-pulse" />;
+        return <Plane className="w-3.5 h-3.5 animate-pulse" style={{ color: 'var(--theme-primary)' }} />;
       case 'search_hotels':
-        return <Building2 className="w-3.5 h-3.5 text-indigo-400" />;
+        return <Building2 className="w-3.5 h-3.5" style={{ color: 'var(--theme-accent)' }} />;
       case 'weather_forecast':
-        return <Sun className="w-3.5 h-3.5 text-amber-400" />;
+        return <Sun className="w-3.5 h-3.5 animate-spin" style={{ color: 'var(--theme-gold)' }} />;
       case 'budget_optimizer':
-        return <DollarSign className="w-3.5 h-3.5 text-emerald-400" />;
+        return <DollarSign className="w-3.5 h-3.5" style={{ color: 'var(--theme-accent)' }} />;
       default:
-        return <Brain className="w-3.5 h-3.5 text-purple-400 animate-pulse" />;
+        return <Brain className="w-3.5 h-3.5 animate-pulse" style={{ color: 'var(--theme-primary)' }} />;
     }
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-900/60 rounded-2xl border border-slate-800 backdrop-blur-md overflow-hidden shadow-2xl">
+    <div className="flex flex-col h-full theme-card rounded-2xl border overflow-hidden shadow-warm-lg">
       {/* Header bar */}
-      <div className="px-4 py-3 border-b border-slate-800 bg-slate-900/90 flex items-center justify-between">
+      <div className="px-4 py-3 border-b flex items-center justify-between" style={{ backgroundColor: 'var(--theme-card)', borderColor: 'var(--theme-border)' }}>
         <div className="flex items-center space-x-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-xs sm:text-sm font-semibold text-slate-200">TripPilot Copilot</span>
-          <span className="text-[10px] px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 font-mono">
-            SSE Stream
+          <div className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ backgroundColor: 'var(--theme-primary)' }} />
+          <span className="text-xs sm:text-sm font-bold font-serif theme-text">TripPilot Copilot</span>
+          <span className="text-[10px] px-1.5 py-0.5 rounded font-mono uppercase tracking-wider theme-badge">
+            Live Stream
           </span>
         </div>
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+          className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
             showFilters 
-              ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40' 
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+              ? 'theme-active-item' 
+              : 'theme-btn'
           }`}
           title="Trip Parameters"
         >
           <SlidersHorizontal className="w-3.5 h-3.5" />
-          <span>Filters</span>
+          <span>Trip Prefs</span>
         </button>
       </div>
 
       {/* Optional Filters Drawer */}
       {showFilters && (
-        <div className="p-3 bg-slate-950/70 border-b border-slate-800/80 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+        <div className="p-3 border-b grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs" style={{ backgroundColor: 'var(--theme-card-subtle)', borderColor: 'var(--theme-border)' }}>
           <div>
-            <label className="block text-slate-400 mb-1 flex items-center space-x-1">
-              <MapPin className="w-3 h-3 text-sky-400" />
+            <label className="block theme-text-muted mb-1 font-medium flex items-center space-x-1">
+              <MapPin className="w-3 h-3" style={{ color: 'var(--theme-primary)' }} />
               <span>Target Destination</span>
             </label>
             <input
               type="text"
               value={destination}
               onChange={(e) => setDestination(e.target.value)}
-              placeholder="e.g. Kyoto, Tokyo, Paris"
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-sky-500"
+              placeholder="e.g. Kyoto, Tuscany, Paris"
+              className="w-full theme-card border rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
+              style={{ borderColor: 'var(--theme-border)' }}
             />
           </div>
           <div>
-            <label className="block text-slate-400 mb-1 flex items-center space-x-1">
-              <Calendar className="w-3 h-3 text-sky-400" />
+            <label className="block theme-text-muted mb-1 font-medium flex items-center space-x-1">
+              <Calendar className="w-3 h-3" style={{ color: 'var(--theme-primary)' }} />
               <span>Duration (Days)</span>
             </label>
             <input
@@ -105,23 +106,25 @@ export function ChatBox({ messages, isLoading, agentStatus, onSendMessage }) {
               max="14"
               value={durationDays}
               onChange={(e) => setDurationDays(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-sky-500"
+              className="w-full theme-card border rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
+              style={{ borderColor: 'var(--theme-border)' }}
             />
           </div>
           <div>
-            <label className="block text-slate-400 mb-1 flex items-center space-x-1">
-              <Compass className="w-3 h-3 text-sky-400" />
+            <label className="block theme-text-muted mb-1 font-medium flex items-center space-x-1">
+              <Compass className="w-3 h-3" style={{ color: 'var(--theme-primary)' }} />
               <span>Travel Style</span>
             </label>
             <select
               value={travelStyle}
               onChange={(e) => setTravelStyle(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-sky-500"
+              className="w-full theme-card border rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
+              style={{ borderColor: 'var(--theme-border)' }}
             >
-              <option value="budget">Backpacker / Budget</option>
-              <option value="moderate">Balanced / Moderate</option>
+              <option value="moderate">Balanced / Curated</option>
               <option value="boutique">Boutique & Cultural</option>
-              <option value="luxury">Luxury & Fine Dining</option>
+              <option value="luxury">Luxury & Gastronomy</option>
+              <option value="budget">Backpacker / Budget</option>
             </select>
           </div>
         </div>
@@ -131,14 +134,14 @@ export function ChatBox({ messages, isLoading, agentStatus, onSendMessage }) {
       <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2">
         {messages.length === 0 ? (
           <div className="h-full flex flex-col justify-center items-center text-center p-4">
-            <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center mb-3">
-              <Sparkles className="w-6 h-6 text-sky-400" />
+            <div className="w-14 h-14 rounded-2xl theme-badge flex items-center justify-center mb-3 shadow-warm-sm">
+              <Compass className="w-7 h-7" style={{ color: 'var(--theme-primary)' }} />
             </div>
-            <h3 className="text-base font-semibold text-slate-200 mb-1">
-              Where will your journey take you?
+            <h3 className="text-lg font-bold font-serif theme-text mb-1">
+              Where shall we journey next?
             </h3>
-            <p className="text-xs text-slate-400 max-w-sm mb-4">
-              Ask TripPilot to build a complete day-by-day itinerary, find flights & boutique stays, or calculate estimated costs.
+            <p className="text-xs theme-text-muted max-w-sm mb-5 leading-relaxed">
+              Curate a bespoke day-by-day travel narrative, discover boutique accommodations & flights, or optimize your trip budget.
             </p>
             <PromptSuggestions onSelectPrompt={handlePromptSelect} />
           </div>
@@ -150,15 +153,15 @@ export function ChatBox({ messages, isLoading, agentStatus, onSendMessage }) {
 
         {/* Live Agent Execution & Tool Progress Badge */}
         {isLoading && (
-          <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/80 text-xs text-slate-300 shadow-md space-y-1.5 w-fit max-w-[90%]">
+          <div className="p-3 rounded-xl theme-card-subtle border text-xs shadow-warm-sm space-y-1.5 w-fit max-w-[90%]">
             <div className="flex items-center space-x-2 font-medium">
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-sky-400 shrink-0" />
-              <span>{agentStatus?.text || 'TripPilot agent is curating your personalized travel dossier...'}</span>
+              <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" style={{ color: 'var(--theme-primary)' }} />
+              <span className="theme-text">{agentStatus?.text || 'TripPilot curator is crafting your itinerary...'}</span>
             </div>
             {agentStatus?.tool && (
-              <div className="flex items-center space-x-1.5 text-[11px] text-sky-300 pl-5">
+              <div className="flex items-center space-x-1.5 text-[11px] pl-5">
                 {renderToolIcon(agentStatus.tool)}
-                <span className="font-mono uppercase text-[10px] bg-slate-900/80 px-1.5 py-0.5 rounded border border-slate-700">
+                <span className="font-mono uppercase text-[10px] theme-card px-1.5 py-0.5 rounded border">
                   {agentStatus.tool}
                 </span>
               </div>
@@ -169,7 +172,7 @@ export function ChatBox({ messages, isLoading, agentStatus, onSendMessage }) {
       </div>
 
       {/* Input box */}
-      <form onSubmit={handleSubmit} className="p-3 bg-slate-950/80 border-t border-slate-800">
+      <form onSubmit={handleSubmit} className="p-3 border-t" style={{ backgroundColor: 'var(--theme-card)', borderColor: 'var(--theme-border)' }}>
         <div className="relative flex items-center">
           <textarea
             rows="2"
@@ -181,24 +184,25 @@ export function ChatBox({ messages, isLoading, agentStatus, onSendMessage }) {
                 handleSubmit();
               }
             }}
-            placeholder="Type your trip vision... (e.g. 'Plan 5 days in Kyoto under $2000')"
-            className="w-full bg-slate-900 border border-slate-700/80 rounded-xl pl-3.5 pr-12 py-2.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 resize-none shadow-inner"
+            placeholder="Describe your travel vision... (e.g. 'Plan 5 days in Kyoto under $2000')"
+            className="w-full theme-card-subtle border rounded-xl pl-3.5 pr-12 py-2.5 text-xs sm:text-sm theme-text placeholder-stone-400 focus:outline-none focus:ring-1 resize-none shadow-inner"
+            style={{ borderColor: 'var(--theme-border)' }}
           />
           <button
             type="submit"
             disabled={!input.trim() || isLoading}
             className={`absolute right-2.5 p-2 rounded-lg transition-all ${
               input.trim() && !isLoading
-                ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-md shadow-sky-500/30 hover:scale-105'
-                : 'text-slate-600 cursor-not-allowed'
+                ? 'theme-primary-btn shadow-md hover:scale-105'
+                : 'opacity-40 cursor-not-allowed theme-btn'
             }`}
           >
             <Send className="w-4 h-4" />
           </button>
         </div>
-        <div className="flex justify-between items-center mt-1.5 text-[11px] text-slate-500 px-1">
-          <span>Press Enter to send, Shift+Enter for new line</span>
-          <span>Powered by Gemini 2.5 & Autonomous Travel Tools</span>
+        <div className="flex justify-between items-center mt-1.5 text-[11px] theme-text-muted px-1">
+          <span>Press Enter to send, Shift+Enter for newline</span>
+          <span>Google Gemini 2.5 • Autonomous Travel Engine</span>
         </div>
       </form>
     </div>

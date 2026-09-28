@@ -38,13 +38,13 @@ export default function App() {
       />
 
       {/* Mobile Tab Switcher */}
-      <div className="lg:hidden flex border-b border-slate-800 bg-slate-950 px-4 py-2 justify-center space-x-2">
+      <div className="lg:hidden flex border-b px-4 py-2 justify-center space-x-2" style={{ backgroundColor: 'var(--theme-card)', borderColor: 'var(--theme-border)' }}>
         <button
           onClick={() => setMobileTab('chat')}
           className={`flex items-center space-x-2 px-4 py-1.5 rounded-lg text-xs font-semibold ${
             mobileTab === 'chat'
-              ? 'bg-sky-500 text-white'
-              : 'text-slate-400 hover:text-slate-200'
+              ? 'theme-primary-btn'
+              : 'theme-btn'
           }`}
         >
           <MessageSquare className="w-3.5 h-3.5" />
@@ -54,8 +54,8 @@ export default function App() {
           onClick={() => setMobileTab('itinerary')}
           className={`flex items-center space-x-2 px-4 py-1.5 rounded-lg text-xs font-semibold ${
             mobileTab === 'itinerary'
-              ? 'bg-sky-500 text-white'
-              : 'text-slate-400 hover:text-slate-200'
+              ? 'theme-primary-btn'
+              : 'theme-btn'
           }`}
         >
           <MapPin className="w-3.5 h-3.5" />

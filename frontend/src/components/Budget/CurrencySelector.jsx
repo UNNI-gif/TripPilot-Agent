@@ -13,16 +13,16 @@ export const CURRENCY_RATES = {
 
 export function CurrencySelector({ currentCurrency, onSelectCurrency }) {
   return (
-    <div className="flex items-center space-x-1.5 bg-slate-900 border border-slate-700/80 rounded-lg px-2.5 py-1">
-      <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
-      <span className="text-[11px] font-semibold text-slate-300">Currency:</span>
+    <div className="flex items-center space-x-1.5 theme-card-subtle border rounded-lg px-2.5 py-1.5 shadow-warm-sm" style={{ borderColor: 'var(--theme-border)' }}>
+      <DollarSign className="w-3.5 h-3.5" style={{ color: 'var(--theme-accent)' }} />
+      <span className="text-[11px] font-bold uppercase tracking-wider theme-text-muted">Currency:</span>
       <select
         value={currentCurrency}
         onChange={(e) => onSelectCurrency(e.target.value)}
-        className="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer"
+        className="bg-transparent text-xs font-bold theme-text focus:outline-none cursor-pointer"
       >
         {Object.entries(CURRENCY_RATES).map(([code, info]) => (
-          <option key={code} value={code} className="bg-slate-900 text-white">
+          <option key={code} value={code} className="bg-white text-slate-800 dark:bg-stone-900 dark:text-white">
             {info.name}
           </option>
         ))}

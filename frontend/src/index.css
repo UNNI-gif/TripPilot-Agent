@@ -2,14 +2,180 @@
 @tailwind components;
 @tailwind utilities;
 
+/* -------------------------------------------------------------
+   CURATED TRAVEL THEMES (Default: Sahara & Terracotta)
+   ------------------------------------------------------------- */
+
+/* 1. SAHARA & TERRACOTTA (Default Editorial Aesthetic) */
+:root, [data-theme="terracotta"] {
+  --theme-bg: #FAF7F2;
+  --theme-bg-radial: radial-gradient(at 10% 10%, rgba(217, 83, 47, 0.08) 0px, transparent 50%), radial-gradient(at 90% 90%, rgba(201, 141, 37, 0.06) 0px, transparent 50%);
+  --theme-card: #FFFFFF;
+  --theme-card-subtle: #F6F1EA;
+  --theme-border: #EAE3D9;
+  --theme-border-strong: #D9532F;
+  --theme-text: #231F20;
+  --theme-text-muted: #6E675F;
+  --theme-primary: #C84B26;
+  --theme-primary-hover: #B23D19;
+  --theme-primary-text: #FFFFFF;
+  --theme-primary-subtle: #FDF3EF;
+  --theme-primary-subtle-text: #B23D19;
+  --theme-primary-subtle-border: #F7D5C8;
+  --theme-accent: #3B684D;
+  --theme-accent-subtle: #EAF2ED;
+  --theme-gold: #B47C1C;
+  --theme-gold-subtle: #FDF8EE;
+  --theme-nav-bg: rgba(250, 247, 242, 0.85);
+  --theme-shadow: 0 10px 25px -4px rgba(120, 80, 40, 0.07), 0 4px 10px -2px rgba(120, 80, 40, 0.03);
+}
+
+/* 2. ALPINE & SAGE (Swiss Glacial Linen & Forest Green) */
+[data-theme="alpine"] {
+  --theme-bg: #F4F7F5;
+  --theme-bg-radial: radial-gradient(at 10% 10%, rgba(46, 107, 72, 0.08) 0px, transparent 50%), radial-gradient(at 90% 90%, rgba(94, 153, 118, 0.06) 0px, transparent 50%);
+  --theme-card: #FFFFFF;
+  --theme-card-subtle: #EBF1ED;
+  --theme-border: #D7E3DC;
+  --theme-border-strong: #24583B;
+  --theme-text: #192E21;
+  --theme-text-muted: #536F5E;
+  --theme-primary: #24583B;
+  --theme-primary-hover: #1B442D;
+  --theme-primary-text: #FFFFFF;
+  --theme-primary-subtle: #EDF5F0;
+  --theme-primary-subtle-text: #1E4D33;
+  --theme-primary-subtle-border: #C8DDD0;
+  --theme-accent: #9A652A;
+  --theme-accent-subtle: #FBF4EC;
+  --theme-gold: #9A652A;
+  --theme-gold-subtle: #FBF4EC;
+  --theme-nav-bg: rgba(244, 247, 245, 0.85);
+  --theme-shadow: 0 10px 25px -4px rgba(30, 70, 45, 0.07), 0 4px 10px -2px rgba(30, 70, 45, 0.03);
+}
+
+/* 3. AMALFI & CITRUS (Bright Coastal Mediterranean & Azure) */
+[data-theme="amalfi"] {
+  --theme-bg: #F8FAFC;
+  --theme-bg-radial: radial-gradient(at 10% 10%, rgba(30, 64, 175, 0.06) 0px, transparent 50%), radial-gradient(at 90% 90%, rgba(217, 119, 6, 0.06) 0px, transparent 50%);
+  --theme-card: #FFFFFF;
+  --theme-card-subtle: #F1F5F9;
+  --theme-border: #E2E8F0;
+  --theme-border-strong: #1E40AF;
+  --theme-text: #0F172A;
+  --theme-text-muted: #64748B;
+  --theme-primary: #1E40AF;
+  --theme-primary-hover: #1E3A8A;
+  --theme-primary-text: #FFFFFF;
+  --theme-primary-subtle: #EFF6FF;
+  --theme-primary-subtle-text: #1D4ED8;
+  --theme-primary-subtle-border: #BFDBFE;
+  --theme-accent: #D97706;
+  --theme-accent-subtle: #FFFBEB;
+  --theme-gold: #D97706;
+  --theme-gold-subtle: #FFFBEB;
+  --theme-nav-bg: rgba(248, 250, 252, 0.85);
+  --theme-shadow: 0 10px 25px -4px rgba(30, 50, 90, 0.07), 0 4px 10px -2px rgba(30, 50, 90, 0.03);
+}
+
+/* 4. DESERT DUSK (Dark Twilight & Sunset Crimson) */
+[data-theme="dusk"] {
+  --theme-bg: #151211;
+  --theme-bg-radial: radial-gradient(at 10% 10%, rgba(224, 90, 54, 0.12) 0px, transparent 50%), radial-gradient(at 90% 90%, rgba(245, 158, 11, 0.08) 0px, transparent 50%);
+  --theme-card: #1F1B19;
+  --theme-card-subtle: #292421;
+  --theme-border: #38312C;
+  --theme-border-strong: #E05A36;
+  --theme-text: #F5EFEB;
+  --theme-text-muted: #A89D95;
+  --theme-primary: #E05A36;
+  --theme-primary-hover: #C84B26;
+  --theme-primary-text: #FFFFFF;
+  --theme-primary-subtle: #2E1F1A;
+  --theme-primary-subtle-text: #FF8F6B;
+  --theme-primary-subtle-border: #4D2D24;
+  --theme-accent: #4E8363;
+  --theme-accent-subtle: #1F2E24;
+  --theme-gold: #F59E0B;
+  --theme-gold-subtle: #2E2514;
+  --theme-nav-bg: rgba(21, 18, 17, 0.85);
+  --theme-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.5);
+}
+
 @layer base {
   body {
-    @apply bg-slate-950 text-slate-100 min-h-screen;
-    background-image: 
-      radial-gradient(at 15% 15%, rgba(14, 165, 233, 0.08) 0px, transparent 50%),
-      radial-gradient(at 85% 85%, rgba(99, 102, 241, 0.06) 0px, transparent 50%);
+    background-color: var(--theme-bg);
+    color: var(--theme-text);
+    background-image: var(--theme-bg-radial);
     background-attachment: fixed;
+    min-height: 100vh;
   }
+}
+
+/* Reusable Theme Component Classes */
+.theme-card {
+  background-color: var(--theme-card);
+  border-color: var(--theme-border);
+  color: var(--theme-text);
+  box-shadow: var(--theme-shadow);
+}
+
+.theme-card-subtle {
+  background-color: var(--theme-card-subtle);
+  border-color: var(--theme-border);
+  color: var(--theme-text);
+}
+
+.theme-text {
+  color: var(--theme-text);
+}
+
+.theme-text-muted {
+  color: var(--theme-text-muted);
+}
+
+.theme-primary-btn {
+  background-color: var(--theme-primary);
+  color: var(--theme-primary-text);
+}
+
+.theme-primary-btn:hover {
+  background-color: var(--theme-primary-hover);
+}
+
+.theme-btn {
+  background-color: var(--theme-card-subtle);
+  border: 1px solid var(--theme-border);
+  color: var(--theme-text);
+}
+
+.theme-btn:hover {
+  background-color: var(--theme-card);
+  border-color: var(--theme-border-strong);
+}
+
+.theme-active-item {
+  background-color: var(--theme-primary-subtle);
+  color: var(--theme-primary-subtle-text);
+  border: 1px solid var(--theme-primary-subtle-border);
+}
+
+.theme-badge {
+  background-color: var(--theme-primary-subtle);
+  color: var(--theme-primary-subtle-text);
+  border: 1px solid var(--theme-primary-subtle-border);
+}
+
+.theme-badge-accent {
+  background-color: var(--theme-accent-subtle);
+  color: var(--theme-accent);
+  border: 1px solid var(--theme-border);
+}
+
+.theme-badge-gold {
+  background-color: var(--theme-gold-subtle);
+  color: var(--theme-gold);
+  border: 1px solid var(--theme-border);
 }
 
 /* Custom scrollbars */
@@ -19,28 +185,14 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
+  background: var(--theme-card-subtle);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(56, 189, 248, 0.25);
+  background: var(--theme-border);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(56, 189, 248, 0.5);
-}
-
-/* Glassmorphism helpers */
-.glass-panel {
-  background: rgba(30, 41, 59, 0.7);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.glass-panel-elevated {
-  background: rgba(30, 41, 59, 0.85);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(56, 189, 248, 0.15);
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  background: var(--theme-primary);
 }

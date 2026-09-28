@@ -63,70 +63,70 @@ export function ExportModal({ isOpen, onClose, tripPlan }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-      <div className="relative w-full max-w-md rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl p-5 overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="relative w-full max-w-md rounded-2xl theme-card border shadow-warm-lg p-5 overflow-hidden">
         
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
-          <h3 className="text-base font-bold text-white flex items-center space-x-2">
-            <Download className="w-5 h-5 text-sky-400" />
-            <span>Export Travel Plan</span>
+        <div className="flex items-center justify-between pb-3 border-b mb-4" style={{ borderColor: 'var(--theme-border)' }}>
+          <h3 className="text-base font-bold font-serif theme-text flex items-center space-x-2">
+            <Download className="w-5 h-5" style={{ color: 'var(--theme-primary)' }} />
+            <span>Export Travel Dossier</span>
           </h3>
-          <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-white">
+          <button onClick={onClose} className="p-1 rounded-lg theme-text-muted hover:theme-text">
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <p className="text-xs text-slate-400 mb-5">
-          Save your itinerary to bring offline, paste into Notion/Obsidian, or print a physical copy.
+        <p className="text-xs theme-text-muted mb-5 leading-relaxed">
+          Save your itinerary to bring offline, paste into Notion/Notes, or print a physical keepsake copy.
         </p>
 
         <div className="space-y-3">
           <button
             onClick={handleDownloadJSON}
-            className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-white transition-all group"
+            className="w-full flex items-center justify-between p-3.5 rounded-xl theme-card-subtle border hover:border-current text-xs font-semibold theme-text transition-all group shadow-warm-sm"
           >
-            <div className="flex items-center space-x-2.5">
-              <div className="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Download className="w-4 h-4" />
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 rounded-lg theme-badge flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Download className="w-4 h-4" style={{ color: 'var(--theme-primary)' }} />
               </div>
               <div className="text-left">
-                <div>Download Raw JSON</div>
-                <div className="text-[10px] text-slate-400 font-normal">Full structured dataset</div>
+                <div className="font-serif">Download Raw JSON</div>
+                <div className="text-[10px] theme-text-muted font-sans font-normal">Full structured dataset</div>
               </div>
             </div>
-            <span className="text-[10px] text-sky-400">.json</span>
+            <span className="text-[10px] font-mono" style={{ color: 'var(--theme-primary)' }}>.json</span>
           </button>
 
           <button
             onClick={handleCopyMarkdown}
-            className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-white transition-all group"
+            className="w-full flex items-center justify-between p-3.5 rounded-xl theme-card-subtle border hover:border-current text-xs font-semibold theme-text transition-all group shadow-warm-sm"
           >
-            <div className="flex items-center space-x-2.5">
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 rounded-lg theme-badge-accent flex items-center justify-center group-hover:scale-110 transition-transform">
                 {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               </div>
               <div className="text-left">
-                <div>{copied ? 'Copied to Clipboard!' : 'Copy as Markdown'}</div>
-                <div className="text-[10px] text-slate-400 font-normal">Ready for Notion or Notes apps</div>
+                <div className="font-serif">{copied ? 'Copied to Clipboard!' : 'Copy as Markdown'}</div>
+                <div className="text-[10px] theme-text-muted font-sans font-normal">Ready for Notion or Notes apps</div>
               </div>
             </div>
-            <span className="text-[10px] text-emerald-400">.md</span>
+            <span className="text-[10px] font-mono" style={{ color: 'var(--theme-accent)' }}>.md</span>
           </button>
 
           <button
             onClick={handlePrint}
-            className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-white transition-all group"
+            className="w-full flex items-center justify-between p-3.5 rounded-xl theme-card-subtle border hover:border-current text-xs font-semibold theme-text transition-all group shadow-warm-sm"
           >
-            <div className="flex items-center space-x-2.5">
-              <div className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 rounded-lg theme-badge-gold flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Printer className="w-4 h-4" />
               </div>
               <div className="text-left">
-                <div>Print / Save to PDF</div>
-                <div className="text-[10px] text-slate-400 font-normal">Use browser print dialog</div>
+                <div className="font-serif">Print / Save as PDF</div>
+                <div className="text-[10px] theme-text-muted font-sans font-normal">Use browser print dialog</div>
               </div>
             </div>
-            <span className="text-[10px] text-purple-400">PDF</span>
+            <span className="text-[10px] font-mono" style={{ color: 'var(--theme-gold)' }}>PDF</span>
           </button>
         </div>
 
