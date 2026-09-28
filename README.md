@@ -1,6 +1,6 @@
 # ✈️ TripPilot Agent - Autonomous AI Travel Planner & Copilot
 
-[![CI/CD Pipeline](https://github.com/UNNI-gif/trippilot-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/UNNI-gif/trippilot-agent/actions)
+[![CI/CD Pipeline](https://github.com/UNNI-gif/TripPilot-Agent/actions/workflows/ci.yml/badge.svg)](https://github.com/UNNI-gif/TripPilot-Agent/actions)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12%20%7C%203.13-3776AB?style=flat&logo=python&logoColor=white)](https://www.python.org/)
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=flat&logo=react&logoColor=black)](https://react.dev/)
@@ -156,8 +156,8 @@ This will automatically configure virtual environments, install dependencies, an
 
 #### 1. Clone the Repository
 ```bash
-git clone https://github.com/UNNI-gif/trippilot-agent.git
-cd trippilot-agent
+git clone https://github.com/UNNI-gif/TripPilot-Agent.git
+cd TripPilot-Agent
 ```
 
 #### 2. Backend Setup
