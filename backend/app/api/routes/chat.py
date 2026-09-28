@@ -21,16 +21,28 @@ async def chat_endpoint(request: ChatRequest, db: Session = Depends(get_db)):
     """
     session_id = request.session_id or str(uuid.uuid4())
     
+    # Extract intent from natural language message + optional hints
+    intent = trip_agent.extract_intent(
+        user_message=request.message,
+        destination_hint=request.destination,
+        duration_days=request.duration_days,
+        travel_style=request.travel_style
+    )
+    dest = intent["destination"]
+
     # Fetch or create session
     session_record = db.query(ChatSession).filter(ChatSession.id == session_id).first()
     if not session_record:
-        session_title = request.destination or (request.message[:40] + "..." if len(request.message) > 40 else request.message)
+        session_title = dest or (request.message[:40] + "..." if len(request.message) > 40 else request.message)
         session_record = ChatSession(
             id=session_id,
             title=f"Trip: {session_title}",
-            destination=request.destination
+            destination=dest
         )
         db.add(session_record)
+        db.commit()
+    elif dest:
+        session_record.destination = dest
         db.commit()
 
     # Load recent conversation history
@@ -50,9 +62,9 @@ async def chat_endpoint(request: ChatRequest, db: Session = Depends(get_db)):
     reply, trip_plan = await trip_agent.run(
         user_message=request.message,
         chat_history=history,
-        destination_hint=request.destination or session_record.destination,
-        duration_days=request.duration_days,
-        travel_style=request.travel_style
+        destination_hint=dest,
+        duration_days=intent["duration_days"],
+        travel_style=intent["travel_style"]
     )
 
     # If trip plan was generated, save to database
@@ -111,16 +123,28 @@ async def chat_stream_endpoint(request: ChatRequest):
         # Separate DB session for async generator
         db = SessionLocal()
         try:
-            # 1. Fetch or create session
+            # 1. Extract natural language intent
+            intent = trip_agent.extract_intent(
+                user_message=request.message,
+                destination_hint=request.destination,
+                duration_days=request.duration_days,
+                travel_style=request.travel_style
+            )
+            dest = intent["destination"]
+
+            # 2. Fetch or create session
             session_record = db.query(ChatSession).filter(ChatSession.id == session_id).first()
             if not session_record:
-                session_title = request.destination or (request.message[:40] + "..." if len(request.message) > 40 else request.message)
+                session_title = dest or (request.message[:40] + "..." if len(request.message) > 40 else request.message)
                 session_record = ChatSession(
                     id=session_id,
                     title=f"Trip: {session_title}",
-                    destination=request.destination
+                    destination=dest
                 )
                 db.add(session_record)
+                db.commit()
+            elif dest:
+                session_record.destination = dest
                 db.commit()
 
             # Record User Message
@@ -132,8 +156,6 @@ async def chat_stream_endpoint(request: ChatRequest):
             db.add(user_msg)
             db.commit()
 
-            dest = request.destination or session_record.destination or "Kyoto"
-
             # Emit initial thought event
             yield f"data: {json.dumps({'event': 'thought', 'text': f'Analyzing travel request for {dest}...'})}\n\n"
             await asyncio.sleep(0.15)
@@ -141,20 +163,22 @@ async def chat_stream_endpoint(request: ChatRequest):
             # Emit flight search tool event
             yield f"data: {json.dumps({'event': 'tool_start', 'tool': 'search_flights', 'text': f'Searching flights and routes to {dest}...'})}\n\n"
             await asyncio.sleep(0.2)
-            yield f"data: {json.dumps({'event': 'tool_end', 'tool': 'search_flights', 'text': 'Found optimal flight routes & pricing'})}\n\n"
+            yield f"data: {json.dumps({'event': 'tool_end', 'tool': 'search_flights', 'text': f'Found optimal flight routes & pricing to {dest}'})}\n\n"
 
             # Emit hotel search tool event
-            yield f"data: {json.dumps({'event': 'tool_start', 'tool': 'search_hotels', 'text': f'Curating boutique stays & accommodations in {dest}...'})}\n\n"
+            hotel_type_label = "budget-friendly stays" if intent.get("wants_cheapest_hotels") else "boutique stays & accommodations"
+            yield f"data: {json.dumps({'event': 'tool_start', 'tool': 'search_hotels', 'text': f'Curating {hotel_type_label} in {dest}...'})}\n\n"
             await asyncio.sleep(0.2)
-            yield f"data: {json.dumps({'event': 'tool_end', 'tool': 'search_hotels', 'text': 'Curated verified hotel options'})}\n\n"
+            yield f"data: {json.dumps({'event': 'tool_end', 'tool': 'search_hotels', 'text': f'Curated verified hotel options in {dest}'})}\n\n"
 
             # Emit live weather tool event
-            yield f"data: {json.dumps({'event': 'tool_start', 'tool': 'weather_forecast', 'text': 'Fetching live weather & packing checklist via Open-Meteo...'})}\n\n"
+            yield f"data: {json.dumps({'event': 'tool_start', 'tool': 'weather_forecast', 'text': f'Fetching live weather & packing checklist for {dest} via Open-Meteo...'})}\n\n"
             await asyncio.sleep(0.2)
             yield f"data: {json.dumps({'event': 'tool_end', 'tool': 'weather_forecast', 'text': 'Live weather & packing checklist synthesized'})}\n\n"
 
             # Emit budget optimizer tool event
-            yield f"data: {json.dumps({'event': 'tool_start', 'tool': 'budget_optimizer', 'text': 'Balancing itemized budget categories...'})}\n\n"
+            duration_val = intent["duration_days"]
+            yield f"data: {json.dumps({'event': 'tool_start', 'tool': 'budget_optimizer', 'text': f'Balancing {duration_val}-day itemized budget categories...'})}\n\n"
             await asyncio.sleep(0.15)
             yield f"data: {json.dumps({'event': 'tool_end', 'tool': 'budget_optimizer', 'text': 'Budget calculated successfully'})}\n\n"
 
@@ -166,8 +190,8 @@ async def chat_stream_endpoint(request: ChatRequest):
                 user_message=request.message,
                 chat_history=history,
                 destination_hint=dest,
-                duration_days=request.duration_days,
-                travel_style=request.travel_style
+                duration_days=intent["duration_days"],
+                travel_style=intent["travel_style"]
             )
 
             # Stream text tokens

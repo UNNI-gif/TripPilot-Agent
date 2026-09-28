@@ -1,10 +1,14 @@
 import json
 import re
+import httpx
 from typing import Dict, Any, Optional, Tuple, List
 from app.core.config import settings
 from app.core.logging import logger
 from app.agents.prompts import SYSTEM_PROMPT
-from app.agents.schemas import TripPlanResponse, DayPlan, ActivityItem, MealRecommendation, TripOverview, BudgetBreakdown, FlightOption, HotelOption
+from app.agents.schemas import (
+    TripPlanResponse, DayPlan, ActivityItem, MealRecommendation,
+    TripOverview, BudgetBreakdown, FlightOption, HotelOption
+)
 from app.tools.flights_tool import search_flights
 from app.tools.hotels_tool import search_hotels
 from app.tools.weather_tool import get_weather_and_packing_tips
@@ -20,6 +24,48 @@ except ImportError:
     logger.warning("google-generativeai package not found. Fallback mode enabled.")
 
 
+KNOWN_DESTINATIONS = [
+    "France", "Paris", "Nice", "Lyon", "Marseille", "Bordeaux",
+    "Italy", "Rome", "Florence", "Venice", "Milan", "Naples", "Amalfi", "Sicily",
+    "Japan", "Kyoto", "Tokyo", "Osaka", "Hokkaido", "Okinawa",
+    "Spain", "Barcelona", "Madrid", "Seville", "Valencia", "Granada",
+    "Switzerland", "Zurich", "Geneva", "Lucerne", "Interlaken",
+    "Greece", "Santorini", "Athens", "Mykonos", "Crete",
+    "United Kingdom", "London", "Edinburgh", "Scotland",
+    "United States", "New York", "Hawaii", "California", "San Francisco", "Los Angeles", "Miami",
+    "Thailand", "Bangkok", "Phuket", "Chiang Mai",
+    "Bali", "Indonesia", "India", "Goa", "Rajasthan",
+    "Germany", "Berlin", "Munich", "Frankfurt",
+    "Portugal", "Lisbon", "Porto", "Algarve",
+    "Netherlands", "Amsterdam",
+    "Iceland", "Reykjavik",
+    "Dubai", "United Arab Emirates",
+    "Australia", "Sydney", "Melbourne",
+    "Canada", "Vancouver", "Toronto", "Banff",
+    "Singapore", "Mexico", "Cancun", "Mexico City",
+    "Egypt", "Cairo",
+    "Turkey", "Istanbul", "Cappadocia",
+    "Morocco", "Marrakech",
+    "Austria", "Vienna", "Salzburg",
+    "Czech Republic", "Prague",
+    "Hungary", "Budapest",
+    "Norway", "Oslo", "Bergen",
+    "Sweden", "Stockholm",
+    "Denmark", "Copenhagen",
+    "Finland", "Helsinki",
+    "Ireland", "Dublin",
+    "Croatia", "Dubrovnik", "Split",
+    "South Korea", "Seoul", "Busan",
+    "Vietnam", "Hanoi", "Da Nang", "Ho Chi Minh City",
+    "New Zealand", "Auckland", "Queenstown",
+    "Brazil", "Rio de Janeiro",
+    "Argentina", "Buenos Aires",
+    "Peru", "Lima", "Cusco",
+    "South Africa", "Cape Town",
+    "Belgium", "Brussels", "Bruges"
+]
+
+
 class TripPilotAgent:
     def __init__(self):
         self.api_key = settings.GEMINI_API_KEY
@@ -27,31 +73,177 @@ class TripPilotAgent:
         self._init_client()
 
     def _init_client(self):
-        if GENAI_AVAILABLE and self.api_key:
+        # Only configure if API key is not an empty string or dummy placeholder
+        is_dummy_key = not self.api_key or "your_" in self.api_key.lower() or len(self.api_key.strip()) < 20
+        if GENAI_AVAILABLE and not is_dummy_key:
             try:
-                genai.configure(api_key=self.api_key)
+                genai.configure(api_key=self.api_key.strip())
                 self.model = genai.GenerativeModel(
                     model_name=self.model_name,
                     system_instruction=SYSTEM_PROMPT
                 )
                 logger.info(f"Gemini client initialized successfully with model: {self.model_name}")
             except Exception as e:
-                logger.error(f"Failed to configure Gemini client: {e}")
+                logger.warning(f"Failed to configure Gemini client: {e}. Using native travel engine.")
                 self.model = None
         else:
             self.model = None
-            if not self.api_key:
-                logger.info("No GEMINI_API_KEY provided; using intelligent trip engine generator.")
+            logger.info("Using TripPilot native knowledge & NLP travel engine.")
+
+    def extract_intent(
+        self,
+        user_message: str,
+        destination_hint: Optional[str] = None,
+        duration_days: Optional[int] = None,
+        travel_style: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Extracts structured travel parameters (destination, duration, travel style, transit prefs)
+        from freeform natural language text.
+        """
+        text = user_message.strip()
+        lower_text = text.lower()
+
+        # 1. Destination Extraction: Prioritize destination in user message
+        dest = None
+
+        # Check for targeted destination preposition patterns like "to France", "in Kyoto", "visit Paris"
+        dest_match = re.search(r'(?:to|in|visit|explore|around|across|for)\s+([A-Za-z\s]{3,30}?)(?:\s+(?:with|for|under|on|and|from|during|starting|\.|\,|$)|$)', text, re.IGNORECASE)
+        if dest_match:
+            candidate = dest_match.group(1).strip()
+            # If candidate matches or contains a known destination
+            for known in KNOWN_DESTINATIONS:
+                if known.lower() == candidate.lower() or known.lower() in candidate.lower() or candidate.lower() in known.lower():
+                    dest = known
+                    break
+            if not dest and candidate.lower() not in ["the", "a", "an", "all", "some", "cheapest", "cheapest hotels", "major locations", "my", "our", "us"]:
+                dest = candidate.title()
+
+        # If not found via preposition pattern, search whole message for known destinations
+        if not dest:
+            for known in KNOWN_DESTINATIONS:
+                pattern = r'\b' + re.escape(known.lower()) + r'\b'
+                if re.search(pattern, lower_text):
+                    dest = known
+                    break
+
+        # If not explicitly in user text, fall back to destination_hint (from UI drawer or prior session)
+        if not dest and destination_hint and destination_hint.strip():
+            dest = destination_hint.strip()
+
+        # Fallback if completely unspecified anywhere
+        if not dest:
+            dest = "France"
+
+        # 2. Duration Extraction: Check user message first
+        days = None
+        month_match = re.search(r'(\d+)\s*(?:-| )?month', lower_text)
+        week_match = re.search(r'(\d+)\s*(?:-| )?week', lower_text)
+        day_match = re.search(r'(\d+)\s*(?:-| )?day', lower_text)
+
+        if month_match:
+            days = int(month_match.group(1)) * 30
+        elif "a month" in lower_text or "one month" in lower_text:
+            days = 30
+        elif week_match:
+            days = int(week_match.group(1)) * 7
+        elif "a week" in lower_text or "one week" in lower_text:
+            days = 7
+        elif day_match:
+            days = int(day_match.group(1))
+        elif "weekend" in lower_text:
+            days = 3
+
+        # Fall back to duration_days hint if message had no duration
+        if not days and duration_days and duration_days > 0:
+            days = duration_days
+
+        if not days:
+            days = 5  # default duration
+
+        # 3. Travel Style & Companions
+        is_romantic = any(w in lower_text for w in ['romantic', 'fiancé', 'fiance', 'couple', 'honeymoon', 'anniversary', 'partner'])
+        is_budget = any(w in lower_text for w in ['cheap', 'cheapest', 'budget', 'affordable', 'hostel', 'economical'])
+        is_luxury = any(w in lower_text for w in ['luxury', '5-star', 'first class', 'deluxe', 'vip'])
+        is_family = any(w in lower_text for w in ['family', 'kids', 'children'])
+
+        computed_style = travel_style if travel_style else "moderate"
+        if is_romantic and is_budget:
+            computed_style = "romantic budget"
+        elif is_romantic:
+            computed_style = "romantic"
+        elif is_budget:
+            computed_style = "budget"
+        elif is_luxury:
+            computed_style = "luxury"
+        elif is_family:
+            computed_style = "family"
+
+        # 4. Logistics & Special Requests
+        wants_cabs = any(w in lower_text for w in ['cab', 'cabs', 'taxi', 'taxis', 'chauffeur', 'private driver', 'uber'])
+        wants_rental = any(w in lower_text for w in ['rental car', 'rent a car', 'road trip', 'driving'])
+        wants_cheapest_hotels = is_budget
+
+        planning_keywords = ["plan", "trip", "itinerary", "visit", "travel", "fly", "days", "budget", "vacation", "holiday", "tour", "explore", "hotel", "hotels", "cab", "cabs"]
+        is_planning_request = any(k in lower_text for k in planning_keywords) or bool(destination_hint)
+
+        return {
+            "destination": dest,
+            "duration_days": days,
+            "travel_style": computed_style,
+            "wants_cabs": wants_cabs,
+            "wants_rental": wants_rental,
+            "wants_cheapest_hotels": wants_cheapest_hotels,
+            "is_romantic": is_romantic,
+            "is_planning_request": is_planning_request
+        }
+
+    def _geocode_destination(self, dest: str) -> Tuple[float, float]:
+        """Looks up coordinates via geocoding API or offline cache."""
+        coords_map = {
+            "france": (48.8566, 2.3522),
+            "paris": (48.8566, 2.3522),
+            "italy": (41.9028, 12.4964),
+            "rome": (41.9028, 12.4964),
+            "florence": (43.7696, 11.2558),
+            "japan": (35.6762, 139.6503),
+            "tokyo": (35.6762, 139.6503),
+            "kyoto": (35.0116, 135.7681),
+            "spain": (41.3879, 2.1699),
+            "barcelona": (41.3879, 2.1699),
+            "london": (51.5074, -0.1278),
+            "switzerland": (47.3769, 8.5417),
+            "zurich": (47.3769, 8.5417),
+            "greece": (36.3932, 25.4615),
+            "santorini": (36.3932, 25.4615),
+            "new york": (40.7128, -74.0060),
+            "bali": (-8.3405, 115.0920),
+            "thailand": (13.7563, 100.5018),
+            "bangkok": (13.7563, 100.5018),
+            "amsterdam": (52.3676, 4.9041)
+        }
+        dest_clean = dest.lower().split(",")[0].strip()
+        if dest_clean in coords_map:
+            return coords_map[dest_clean]
+
+        try:
+            with httpx.Client(timeout=3.0) as client:
+                res = client.get("https://geocoding-api.open-meteo.com/v1/search", params={"name": dest, "count": 1})
+                if res.status_code == 200:
+                    data = res.json()
+                    if data.get("results"):
+                        return float(data["results"][0]["latitude"]), float(data["results"][0]["longitude"])
+        except Exception:
+            pass
+
+        return (48.8566, 2.3522)
 
     def _extract_json(self, text: str) -> Optional[Dict[str, Any]]:
         """Extracts JSON block from model response."""
         try:
-            # First attempt: find ```json ... ``` markdown fence
             json_match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", text)
             if json_match:
                 return json.loads(json_match.group(1))
-            
-            # Second attempt: find raw outermost { ... }
             raw_match = re.search(r"(\{[\s\S]*\})", text)
             if raw_match:
                 return json.loads(raw_match.group(1))
@@ -59,129 +251,165 @@ class TripPilotAgent:
             logger.warning(f"Failed to parse JSON from response text: {e}")
         return None
 
-    def _generate_synthetic_trip(self, destination: str, duration_days: int = 3, travel_style: str = "moderate") -> TripPlanResponse:
+    def _generate_synthetic_trip(self, intent: Dict[str, Any]) -> TripPlanResponse:
         """
-        Generates a rich, verified structured trip plan using our autonomous tools.
-        Acts as an ultra-reliable, high-fidelity trip engine.
+        Generates a rich, verified structured trip plan tailored to the exact destination
+        and user preferences.
         """
-        dest = destination.title() if destination else "Tokyo, Japan"
-        days = max(1, min(14, duration_days))
-        style = travel_style.lower() if travel_style else "moderate"
+        dest = intent["destination"]
+        total_duration = intent["duration_days"]
+        style = intent["travel_style"]
+        wants_cabs = intent.get("wants_cabs", False)
+        is_romantic = intent.get("is_romantic", False)
+
+        # For long trips (e.g. 1 month / 30 days), create a featured 7-day multi-region loop
+        # that serves as the centerpiece itinerary, while computing the budget for the full duration!
+        display_days = min(7, total_duration)
 
         # Execute autonomous tools
         flights_raw = search_flights("New York (JFK)", dest, style)
         hotels_raw = search_hotels(dest, style)
         weather_raw = get_weather_and_packing_tips(dest)
-        budget_raw = calculate_trip_budget(days, style, travelers=2)
+        budget_raw = calculate_trip_budget(total_duration, style, travelers=2 if is_romantic else 1)
         places_raw = get_attractions_and_dining(dest)
 
         flights = [FlightOption(**f) for f in flights_raw]
         hotels = [HotelOption(**h) for h in hotels_raw]
+
+        # Add custom customs & transit notes
+        customs = list(weather_raw["local_customs_and_safety"])
+        if wants_cabs:
+            if "france" in dest.lower() or "paris" in dest.lower():
+                customs.insert(0, "Taxi & Cab Service: Use the official Taxi G7 app (fixed airport flat-rates, priority couple bookings) and Uber/Bolt for city rides. Pre-book private chauffeured transfers for castle and regional excursions.")
+            else:
+                customs.insert(0, f"Private Cab & Taxi Service: Pre-arrange airport private chauffeured transfers and utilize vetted local taxi apps in {dest} for seamless door-to-door comfort.")
+
+        if is_romantic:
+            customs.append("Romantic Dining: Reserve sunset tables and candlelit courtyard bistros 2-3 weeks in advance for prime couple seating.")
+
         overview = TripOverview(
             destination=dest,
-            tagline=f"Unforgettable {days}-Day Discovery of {dest}",
-            duration_days=days,
+            tagline=f"Unforgettable {total_duration}-Day {'Romantic ' if is_romantic else ''}Discovery of {dest}",
+            duration_days=total_duration,
             best_season=weather_raw["best_season"],
             weather_summary=weather_raw["weather_summary"],
             packing_list=weather_raw["packing_list"],
-            local_customs_and_safety=weather_raw["local_customs_and_safety"]
+            local_customs_and_safety=customs
         )
         budget = BudgetBreakdown(**budget_raw)
 
-        # Base coordinates for mapping
-        dest_key = dest.lower().split(",")[0].strip()
-        coords_map = {
-            "kyoto": (35.0116, 135.7681),
-            "tokyo": (35.6762, 139.6503),
-            "paris": (48.8566, 2.3522),
-            "rome": (41.9028, 12.4964),
-            "london": (51.5074, -0.1278),
-            "barcelona": (41.3879, 2.1699),
-            "bali": (-8.3405, 115.0920),
-            "santorini": (36.3932, 25.4615),
-            "new york": (40.7128, -74.0060),
-            "bangkok": (13.7563, 100.5018),
-            "amsterdam": (52.3676, 4.9041),
-            "zurich": (47.3769, 8.5417)
-        }
-        base_lat, base_lng = coords_map.get(dest_key, (48.8566, 2.3522))
+        base_lat, base_lng = self._geocode_destination(dest)
 
-        # Build day-by-day itinerary
-        day_themes = [
-            f"Iconic Landmarks & Historical Heart of {dest}",
-            f"Hidden Alleys, Artisan Boutiques & Vibrant Street Food",
-            f"Cultural Temples, Scenic Gardens & Panoramic Vistas",
-            f"Art Galleries, Modern Architecture & Sunset Skyline",
-            f"Local Neighborhood Wandering, Markets & Farewell Gastronomy",
-            f"Excursion to Nearby Scenic Mountains & Countryside Escape",
-            f"Relaxed Morning Cafes, Souvenir Treasure Hunting & Departure"
-        ]
+        # Destination specific daily themes
+        if "france" in dest.lower() or "paris" in dest.lower():
+            day_themes = [
+                "Arrival in Paris: Romantic Eiffel Tower Sunset & Champagne Seine River Cruise",
+                "Artistic Heart: The Louvre Masterpieces & Bohemian Montmartre Artists Square",
+                "Royal Grandeur: Excursion to the Palace of Versailles, Hall of Mirrors & Fountains",
+                "Chic Strolls: Le Marais Courtyard Boutiques, Latin Quarter & Notre-Dame Promenade",
+                "French Gastronomy: Wine & Cheese Tasting, Covered Markets & Saint-Germain Evening Jazz",
+                "The Sunlit South: High-Speed TGV to the French Riviera & Promenade des Anglais (Nice)",
+                "Provençal Romance: Lavender Hilltop Villages & Farewell Candlelit Bistro Dinner"
+            ]
+        elif "italy" in dest.lower() or "rome" in dest.lower():
+            day_themes = [
+                "Ancient Rome: The Colosseum, Roman Forum & Evening Piazza Navona Stroll",
+                "Renaissance Splendor: Vatican Museums, Sistine Chapel & Trastevere Wine Walk",
+                "Tuscan Charm: High-Speed Rail to Florence, Duomo Vista & Artisan Leather Markets",
+                "Romantic Canals: Arrival in Venice, Gondola Ride & St. Mark's Square",
+                "Venetian Islands: Murano Glassblowing, Burano Colorful Houses & Seafood Trattoria",
+                "Amalfi Coast Escape: Cliffside Strolls in Positano & Lemon Grove Tasting",
+                "Farewell Sunset Dinner overlooking the Bay of Naples"
+            ]
+        else:
+            day_themes = [
+                f"Iconic Landmarks & Historical Heart of {dest}",
+                f"Hidden Alleys, Artisan Boutiques & Romantic Promenade Walk",
+                f"Cultural Heritage, Historic Temples & Panoramic Vistas",
+                f"Art Galleries, Modern Architecture & Sunset Skyline",
+                f"Local Neighborhood Wandering, Markets & Regional Gastronomy",
+                f"Excursion to Nearby Scenic Countryside & Country Estates",
+                f"Relaxed Morning Cafés, Souvenir Treasure Hunting & Farewell Celebration"
+            ]
+
+        transit_notes = (
+            "Private Cab & Chauffeur: Utilize Taxi G7 / Uber / Bolt and private chauffeured transfers for effortless door-to-door comfort."
+            if wants_cabs else
+            f"Utilize the local metro/tram network and regional express rail for effortless transit around {dest}."
+        )
+
+        landmarks = places_raw.get("landmarks", [])
+        dining = places_raw.get("dining", [])
 
         itinerary = []
-        for d in range(1, days + 1):
+        for d in range(1, display_days + 1):
             theme = day_themes[(d - 1) % len(day_themes)]
-            day_offset_lat = (d - 1) * 0.008
-            day_offset_lng = (d - 1) * 0.009
+            day_offset_lat = (d - 1) * 0.007
+            day_offset_lng = (d - 1) * 0.008
+
+            lm1 = landmarks[(d * 2 - 2) % len(landmarks)]
+            lm2 = landmarks[(d * 2 - 1) % len(landmarks)]
+
             activities = [
                 ActivityItem(
                     time_slot="Morning",
-                    time="09:00 AM - 12:00 PM",
-                    title=f"Explore Central {dest} & Historic District",
-                    description=f"Begin your morning exploring the cultural landmarks of {dest}, marveling at architecture and taking in morning serenity.",
-                    location=f"Old Town Center, {dest}",
-                    category="Culture & Sightseeing",
-                    estimated_cost="$15",
-                    latitude=round(base_lat + day_offset_lat + 0.005, 4),
-                    longitude=round(base_lng + day_offset_lng - 0.004, 4),
-                    tips="Beat the crowd by arriving right at opening time."
+                    time="09:30 AM - 12:30 PM",
+                    title=lm1["title"],
+                    description=f"Begin your morning exploring {lm1['title']}, immersing in the culture and scenic beauty.",
+                    location=lm1.get("location", f"Central {dest}"),
+                    category=lm1.get("category", "Culture & Sightseeing"),
+                    estimated_cost=lm1.get("estimated_cost", "$20"),
+                    latitude=round(base_lat + day_offset_lat + 0.004, 4),
+                    longitude=round(base_lng + day_offset_lng - 0.003, 4),
+                    tips=lm1.get("tips", "Arrive early to beat the crowd and enjoy prime lighting.")
                 ),
                 ActivityItem(
                     time_slot="Afternoon",
-                    time="02:00 PM - 05:00 PM",
-                    title=f"Artisan Quarter & Promenade Walk",
-                    description=f"Stroll through quaint cobblestone lanes, artisan craft shops, and botanical pathways.",
-                    location=f"Artisan District, {dest}",
-                    category="Nature & Leisure",
-                    estimated_cost="Free",
-                    latitude=round(base_lat + day_offset_lat - 0.003, 4),
-                    longitude=round(base_lng + day_offset_lng + 0.006, 4),
-                    tips="Stop by local tea shops or espresso counters for an afternoon refresher."
+                    time="02:30 PM - 05:30 PM",
+                    title=lm2["title"],
+                    description=f"Continue your afternoon journey discovering {lm2['title']}, with time for artisan shops and cozy cafés.",
+                    location=lm2.get("location", f"Historic District, {dest}"),
+                    category=lm2.get("category", "Heritage & Leisure"),
+                    estimated_cost=lm2.get("estimated_cost", "Free"),
+                    latitude=round(base_lat + day_offset_lat - 0.002, 4),
+                    longitude=round(base_lng + day_offset_lng + 0.005, 4),
+                    tips=lm2.get("tips", "Take time to explore the adjacent pedestrian alleys.")
                 ),
                 ActivityItem(
                     time_slot="Evening",
-                    time="06:30 PM - 09:30 PM",
-                    title=f"Sunset Panorama & Night Ambiance",
-                    description=f"Watch the sunset from an elevated scenic observation point, followed by an evening lantern or neon stroll.",
-                    location=f"Skyline Promenade, {dest}",
-                    category="Entertainment",
-                    estimated_cost="$20",
-                    latitude=round(base_lat + day_offset_lat + 0.008, 4),
-                    longitude=round(base_lng + day_offset_lng + 0.002, 4),
-                    tips="Pre-book sunset time tickets for prime photo opportunities."
+                    time="07:00 PM - 10:00 PM",
+                    title=f"Sunset Panorama & {'Romantic Candlelit Dinner' if is_romantic else 'Evening Ambiance'}",
+                    description=f"Savor golden hour views followed by a dinner experience at a recommended local bistro in {dest}.",
+                    location=f"Scenic Promenade, {dest}",
+                    category="Romance & Dining" if is_romantic else "Dining & Leisure",
+                    estimated_cost="$35",
+                    latitude=round(base_lat + day_offset_lat + 0.006, 4),
+                    longitude=round(base_lng + day_offset_lng + 0.001, 4),
+                    tips="Reserve a window or outdoor terrace table for romantic twilight views."
                 )
             ]
 
             meals = [
                 MealRecommendation(
                     meal_type="Breakfast",
-                    name=f"Morning Harvest Cafe ({dest})",
-                    cuisine="Artisan Bakery & Coffee",
-                    recommended_dish="Fresh sourdough pastries & local roast coffee",
+                    name="Morning Artisan Bakery & Espresso Counter",
+                    cuisine="Local Bakery & Coffee",
+                    recommended_dish="Fresh butter pastries, warm breads & artisan roast coffee",
                     price_range="$"
                 ),
                 MealRecommendation(
                     meal_type="Lunch",
-                    name=places_raw["dining"][0]["name"],
-                    cuisine=places_raw["dining"][0]["cuisine"],
-                    recommended_dish=places_raw["dining"][0]["recommended_dish"],
-                    price_range=places_raw["dining"][0]["price_range"]
+                    name=dining[0]["name"],
+                    cuisine=dining[0]["cuisine"],
+                    recommended_dish=dining[0]["recommended_dish"],
+                    price_range=dining[0]["price_range"]
                 ),
                 MealRecommendation(
                     meal_type="Dinner",
-                    name=places_raw["dining"][1]["name"],
-                    cuisine=places_raw["dining"][1]["cuisine"],
-                    recommended_dish=places_raw["dining"][1]["recommended_dish"],
-                    price_range=places_raw["dining"][1]["price_range"]
+                    name=dining[1 % len(dining)]["name"],
+                    cuisine=dining[1 % len(dining)]["cuisine"],
+                    recommended_dish=dining[1 % len(dining)]["recommended_dish"],
+                    price_range=dining[1 % len(dining)]["price_range"]
                 )
             ]
 
@@ -192,24 +420,22 @@ class TripPilotAgent:
                     theme=theme,
                     activities=activities,
                     meals=meals,
-                    transit_tips=f"Utilize the local metro/tram network with a daily transit pass for effortless navigation around {dest}."
+                    transit_tips=transit_notes
                 )
             )
 
+        title = f"The Ultimate {total_duration}-Day {'Romantic ' if is_romantic else ''}Grand Tour of {dest}"
+
         return TripPlanResponse(
-            title=f"The Ultimate {days}-Day {dest} Itinerary",
+            title=title,
             destination=dest,
-            duration_days=days,
+            duration_days=total_duration,
             overview=overview,
             flights=flights,
             hotels=hotels,
             itinerary=itinerary,
             budget=budget,
-            key_recommendations=[
-                f"Purchase a contactless travel transit card right upon arrival at the airport.",
-                f"Reservations for high-end dining in {dest} should be booked 2-3 weeks in advance.",
-                f"Keep your comfortable walking footwear handy—most highlights are best experienced on foot."
-            ]
+            key_recommendations=customs
         )
 
     async def run(
@@ -221,62 +447,48 @@ class TripPilotAgent:
         travel_style: Optional[str] = None
     ) -> Tuple[str, Optional[TripPlanResponse]]:
         """
-        Executes the agent logic:
-        1. Contextualize with history and tool insights.
-        2. Queries Gemini LLM.
-        3. Parses response text and structured itinerary.
-        4. Seamlessly falls back to synthetic high-fidelity engine if Gemini is offline or without key.
+        Executes the agent logic with natural language intent extraction.
         """
-        # Determine intent: is this a trip planning request or general question?
-        planning_keywords = ["plan", "trip", "itinerary", "visit", "travel", "fly", "days", "budget", "vacation", "holiday", "tour", "explore", "kyoto", "paris", "tokyo", "rome", "bali", "swiss", "york", "spain", "london"]
-        is_planning_request = any(k in user_message.lower() for k in planning_keywords) or bool(destination_hint)
+        intent = self.extract_intent(
+            user_message=user_message,
+            destination_hint=destination_hint,
+            duration_days=duration_days,
+            travel_style=travel_style
+        )
 
-        # Detect destination if not explicitly passed
-        dest = destination_hint
-        if not dest:
-            for word in ["Kyoto", "Tokyo", "Paris", "Rome", "London", "Barcelona", "Bali", "New York", "Dubai", "Amsterdam", "Iceland", "Santorini", "Bangkok", "Singapore", "Zurich"]:
-                if word.lower() in user_message.lower():
-                    dest = word
-                    break
-        if not dest and is_planning_request:
-            dest = "Kyoto, Japan"
+        dest = intent["destination"]
+        days = intent["duration_days"]
+        style = intent["travel_style"]
+        is_planning = intent["is_planning_request"]
 
-        days = duration_days or 3
-        # Match days in user message if mentioned e.g. "5 days" or "4-day"
-        day_match = re.search(r"(\d+)\s*(?:-| )day", user_message.lower())
-        if day_match:
-            try:
-                days = int(day_match.group(1))
-            except ValueError:
-                pass
-
-        # If Gemini is configured and active, invoke it
-        if self.model and self.api_key:
+        # If Gemini is configured and active with a valid API key, invoke it
+        if self.model:
             try:
                 logger.info(f"Invoking Gemini for prompt: '{user_message}'")
-                
-                # Enrich prompt with real tool data
-                tool_flight_preview = search_flights("Home", dest, travel_style or "moderate")
-                tool_hotel_preview = search_hotels(dest, travel_style or "moderate")
-                tool_budget_preview = calculate_trip_budget(days, travel_style or "moderate")
+                tool_flight_preview = search_flights("Home", dest, style)
+                tool_hotel_preview = search_hotels(dest, style)
+                tool_budget_preview = calculate_trip_budget(days, style, travelers=2 if intent["is_romantic"] else 1)
 
                 augmented_prompt = f"""User request: {user_message}
 
-Destination: {dest}
-Duration: {days} days
-Style: {travel_style or 'moderate'}
+Extracted Intent:
+- Destination: {dest}
+- Duration: {days} days
+- Travel Style: {style}
+- Cab/Private Driver Service Requested: {intent['wants_cabs']}
+- Budget Stays Requested: {intent['wants_cheapest_hotels']}
+- Romantic / Couple: {intent['is_romantic']}
 
 Pre-computed Travel Insights:
 - Recommended Flights: {json.dumps(tool_flight_preview[:2])}
 - Recommended Stays: {json.dumps(tool_hotel_preview[:2])}
 - Target Budget Breakdown: {json.dumps(tool_budget_preview)}
 
-Craft a personalized response with a conversational intro and the full TripPlan JSON block.
+Craft a personalized response with a conversational intro directly acknowledging their destination ({dest}), duration ({days} days), romance, cab requests, and the full TripPlan JSON block.
 """
                 response = self.model.generate_content(augmented_prompt)
                 response_text = response.text
 
-                # Attempt to extract structured itinerary
                 parsed_json = self._extract_json(response_text)
                 trip_plan = None
                 if parsed_json:
@@ -284,30 +496,34 @@ Craft a personalized response with a conversational intro and the full TripPlan 
                         trip_plan = TripPlanResponse(**parsed_json)
                     except Exception as parse_err:
                         logger.warning(f"Pydantic validation failed on Gemini output: {parse_err}. Re-synthesizing structure.")
-                        trip_plan = self._generate_synthetic_trip(dest, days, travel_style or "moderate")
+                        trip_plan = self._generate_synthetic_trip(intent)
 
-                # Remove the JSON code fence from conversational reply text for clean display
                 clean_reply = re.sub(r"```(?:json)?\s*[\s\S]*?\s*```", "", response_text).strip()
                 if not clean_reply:
                     clean_reply = f"Here is your personalized {days}-day itinerary for {dest}! Review the day-by-day plan, hotel recommendations, and budget breakdown below."
 
                 return clean_reply, trip_plan
             except Exception as e:
-                logger.error(f"Gemini API invocation encountered error: {e}. Falling back to autonomous engine.")
+                logger.error(f"Gemini API invocation error: {e}. Falling back to native travel engine.")
 
-        # Fallback / Autonomous synthetic engine
-        if is_planning_request:
-            trip_plan = self._generate_synthetic_trip(dest, days, travel_style or "moderate")
+        # Native travel knowledge engine
+        if is_planning:
+            trip_plan = self._generate_synthetic_trip(intent)
+            
+            cab_mention = " We've also included dedicated private cab and chauffeur recommendations (Taxi G7 & Uber) for stress-free door-to-door transit." if intent["wants_cabs"] else ""
+            budget_mention = " We selected verified budget-friendly boutique stays to maximize your savings without sacrificing charm." if intent["wants_cheapest_hotels"] else ""
+            romantic_mention = " Perfect for you and your fiancé to celebrate your romance!" if intent["is_romantic"] else ""
+
             reply = (
-                f"I've tailored an exciting **{days}-day adventure to {dest}** for you! 🌟\n\n"
-                f"We've optimized your schedule with curated morning cultural exploration, relaxed artisan afternoon strolls, and stellar dining spots. "
-                f"Explore the interactive itinerary board below to see the flight options, handpicked boutique hotels, and comprehensive budget breakdown."
+                f"I've tailored an unforgettable **{days}-day adventure to {dest}** for you! 🌟{romantic_mention}\n\n"
+                f"We've structured your journey with iconic bucket-list landmarks, intimate scenic promenades, and authentic local dining.{cab_mention}{budget_mention}\n\n"
+                f"Explore the interactive itinerary board, flight options, vetted accommodations, and the comprehensive budget forecast below."
             )
             return reply, trip_plan
         else:
             return (
-                "Hello traveler! I am **TripPilot**, your AI travel copilot. Where would you like to travel next? "
-                "Tell me your dream destination, trip duration, budget, or preferred travel style (e.g. *'Plan a 5-day romantic trip to Kyoto'* or *'Weekend getaway to Barcelona'*), and I will build your complete custom itinerary!",
+                f"Hello traveler! I am **TripPilot**, your AI travel copilot. Where would you like to travel next? "
+                f"Tell me your destination, duration, budget, or preferred travel style (e.g. *'Plan a romantic trip to France'*), and I will build your complete custom itinerary!",
                 None
             )
 

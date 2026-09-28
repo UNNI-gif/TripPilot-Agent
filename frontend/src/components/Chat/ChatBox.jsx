@@ -7,8 +7,8 @@ export function ChatBox({ messages, isLoading, agentStatus, onSendMessage }) {
   const [input, setInput] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [destination, setDestination] = useState('');
-  const [durationDays, setDurationDays] = useState(4);
-  const [travelStyle, setTravelStyle] = useState('moderate');
+  const [durationDays, setDurationDays] = useState('');
+  const [travelStyle, setTravelStyle] = useState('');
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -23,11 +23,13 @@ export function ChatBox({ messages, isLoading, agentStatus, onSendMessage }) {
     e?.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    onSendMessage(input, {
-      destination: destination || undefined,
-      durationDays: durationDays || undefined,
-      travelStyle: travelStyle || undefined
-    });
+    // Only pass explicit filters if user entered them in the drawer
+    const options = {};
+    if (destination.trim()) options.destination = destination.trim();
+    if (durationDays && parseInt(durationDays, 10) > 0) options.durationDays = parseInt(durationDays, 10);
+    if (travelStyle.trim()) options.travelStyle = travelStyle.trim();
+
+    onSendMessage(input, options);
     setInput('');
   };
 
@@ -121,6 +123,7 @@ export function ChatBox({ messages, isLoading, agentStatus, onSendMessage }) {
               className="w-full theme-card border rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
               style={{ borderColor: 'var(--theme-border)' }}
             >
+              <option value="">Auto-detect from message</option>
               <option value="moderate">Balanced / Curated</option>
               <option value="boutique">Boutique & Cultural</option>
               <option value="luxury">Luxury & Gastronomy</option>

@@ -77,3 +77,23 @@ def test_chat_stream():
         # Read initial chunk
         chunks = list(stream_res.iter_lines())
         assert len(chunks) > 0
+
+def test_freeform_france_romantic_trip():
+    # User provides only free-form natural language text, without form parameters
+    response = client.post("/api/chat", json={
+        "message": "Plan a 1-month romantic trip to France with my fiancé. Get us the cheapest hotels to stay and a cab service with all major locations to see."
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["trip_plan"] is not None
+    plan = data["trip_plan"]
+    assert plan["destination"] == "France"
+    assert plan["duration_days"] == 30
+    assert "France" in plan["title"]
+    # Check that cab service is recommended in itinerary transit tips
+    assert any("cab" in d["transit_tips"].lower() or "taxi" in d["transit_tips"].lower() for d in plan["itinerary"])
+    # Check that hotels include budget options
+    assert any(h["price_per_night_usd"] <= 70 for h in plan["hotels"])
+    # Check that budget is calculated for the full month
+    assert plan["budget"]["total_estimated"] > 2000
+
