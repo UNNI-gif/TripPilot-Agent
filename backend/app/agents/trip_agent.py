@@ -361,6 +361,17 @@ class TripPilotAgent:
             dist_deg = 0.008 + (day_num % 4) * 0.004 + slot_idx * 0.003
             return round(base_lat + dist_deg * math.cos(angle), 4), round(base_lng + dist_deg * math.sin(angle), 4)
 
+        # Distance calculation helper for travel pacing
+        def calculate_dist(lt1: float, ln1: float, lt2: float, ln2: float) -> float:
+            r = 6371.0
+            dlat = math.radians(lt2 - lt1)
+            dlon = math.radians(ln2 - ln1)
+            a = math.sin(dlat / 2)**2 + math.cos(math.radians(lt1)) * math.cos(math.radians(lt2)) * math.sin(dlon / 2)**2
+            c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+            return r * c
+
+        rainy_raw = places_raw.get("rainy_day_landmarks", [])
+
         itinerary = []
         for d in range(1, display_days + 1):
             theme = day_themes[(d - 1) % len(day_themes)]
@@ -372,6 +383,18 @@ class TripPilotAgent:
             lat1, lng1 = resolve_coords(lm1, 0, d)
             lat2, lng2 = resolve_coords(lm2, 1, d)
             lat3, lng3 = resolve_coords(dinner_rec, 2, d)
+
+            # Calculate daily walking distance & pacing
+            d12 = calculate_dist(lat1, lng1, lat2, lng2)
+            d23 = calculate_dist(lat2, lng2, lat3, lng3)
+            daily_walking_km = round(d12 + d23 + 2.0, 1)
+
+            if daily_walking_km < 5.5:
+                pacing = "Relaxed"
+            elif daily_walking_km <= 9.0:
+                pacing = "Balanced"
+            else:
+                pacing = "Ambitious"
 
             activities = [
                 ActivityItem(
@@ -412,6 +435,56 @@ class TripPilotAgent:
                 )
             ]
 
+            # Curate Rainy Day Contingency Plan
+            rainy_activities = []
+            if rainy_raw:
+                r1 = rainy_raw[(d * 2 - 2) % len(rainy_raw)]
+                r2 = rainy_raw[(d * 2 - 1) % len(rainy_raw)]
+                r3 = rainy_raw[(d * 2) % len(rainy_raw)]
+
+                rlat1, rlng1 = resolve_coords(r1, 0, d)
+                rlat2, rlng2 = resolve_coords(r2, 1, d)
+                rlat3, rlng3 = resolve_coords(r3, 2, d)
+
+                rainy_activities = [
+                    ActivityItem(
+                        time_slot="Morning",
+                        time="10:00 AM - 01:00 PM",
+                        title=r1["title"],
+                        description=f"Sheltered indoor cultural morning: Explore {r1['title']} completely protected from precipitation.",
+                        location=r1.get("location", f"Central {dest}"),
+                        category=r1.get("category", "Indoor Culture & Art"),
+                        estimated_cost=r1.get("estimated_cost", "$18"),
+                        latitude=rlat1,
+                        longitude=rlng1,
+                        tips=r1.get("tips", "Ideal indoor refuge during inclement weather.")
+                    ),
+                    ActivityItem(
+                        time_slot="Afternoon",
+                        time="02:30 PM - 05:30 PM",
+                        title=r2["title"],
+                        description=f"Rainproof afternoon stroll: Experience {r2['title']} with cozy artisanal tea salons and vintage arcades.",
+                        location=r2.get("location", f"Covered District, {dest}"),
+                        category=r2.get("category", "Covered Heritage & Shopping"),
+                        estimated_cost=r2.get("estimated_cost", "Free"),
+                        latitude=rlat2,
+                        longitude=rlng2,
+                        tips=r2.get("tips", "Stay dry while admiring vintage bookstores and warm bakeries.")
+                    ),
+                    ActivityItem(
+                        time_slot="Evening",
+                        time="07:30 PM - 10:30 PM",
+                        title=r3["title"],
+                        description=f"Intimate subterranean or cellar dinner experience: Savor regional wine tastings and hearty dishes away from rain.",
+                        location=r3.get("location", f"Historic Quarter, {dest}"),
+                        category=r3.get("category", "Subterranean Dining & Comfort"),
+                        estimated_cost=r3.get("estimated_cost", "$35"),
+                        latitude=rlat3,
+                        longitude=rlng3,
+                        tips="Pre-book cellar tables for prime cozy candlelit ambiance."
+                    )
+                ]
+
             meals = [
                 MealRecommendation(
                     meal_type="Breakfast",
@@ -443,7 +516,10 @@ class TripPilotAgent:
                     theme=theme,
                     activities=activities,
                     meals=meals,
-                    transit_tips=transit_notes
+                    transit_tips=transit_notes,
+                    rainy_day_activities=rainy_activities,
+                    pacing_score=pacing,
+                    estimated_walking_km=daily_walking_km
                 )
             )
 

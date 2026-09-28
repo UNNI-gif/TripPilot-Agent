@@ -120,4 +120,25 @@ def test_authentic_gps_coordinates():
     assert 48.8 <= first_act["latitude"] <= 48.9
     assert 2.2 <= first_act["longitude"] <= 2.4
 
+def test_rainy_day_and_pacing_barometer():
+    response = client.post("/api/trips/generate?destination=France&duration_days=3")
+    assert response.status_code == 200
+    data = response.json()
+    first_day = data["itinerary"][0]
+    
+    # Verify Travel Pacing Barometer
+    assert first_day.get("estimated_walking_km") is not None
+    assert first_day["estimated_walking_km"] > 0
+    assert first_day.get("pacing_score") in ["Relaxed", "Balanced", "Ambitious"]
+    
+    # Verify Rainy Day Weather Contingency Pivot activities
+    rainy_acts = first_day.get("rainy_day_activities")
+    assert rainy_acts is not None and len(rainy_acts) >= 3
+    for act in rainy_acts:
+        assert act["title"]
+        assert act["latitude"] is not None and act["longitude"] is not None
+        assert 48.8 <= act["latitude"] <= 48.9
+        assert 2.2 <= act["longitude"] <= 2.4
+
+
 

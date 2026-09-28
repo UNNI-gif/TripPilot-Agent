@@ -27,6 +27,9 @@ class DayPlan(BaseModel):
     activities: List[ActivityItem] = Field(default_factory=list, description="Activities for this day")
     meals: List[MealRecommendation] = Field(default_factory=list, description="Recommended dining options")
     transit_tips: Optional[str] = Field(None, description="Transportation recommendation for this day")
+    rainy_day_activities: List[ActivityItem] = Field(default_factory=list, description="Curated indoor alternatives in case of rain")
+    pacing_score: Optional[str] = Field("Balanced", description="Relaxed, Balanced, or Ambitious")
+    estimated_walking_km: Optional[float] = Field(5.5, description="Estimated total walking distance in kilometers")
 
 class FlightOption(BaseModel):
     airline: str = Field(..., description="Airline name")

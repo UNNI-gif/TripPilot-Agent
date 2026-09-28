@@ -153,6 +153,35 @@ DESTINATION_KNOWLEDGE = {
                 "latitude": 43.6961,
                 "longitude": 7.2755
             }
+        ],
+        "rainy_day_landmarks": [
+            {
+                "title": "Musée d'Orsay Impressionist Masterpieces (Indoor Refuge)",
+                "location": "Left Bank, 7th Arrondissement, Paris",
+                "category": "Art & Indoor Refuge",
+                "estimated_cost": "$19",
+                "latitude": 48.8599,
+                "longitude": 2.3266,
+                "tips": "Shelter under the grand glass barrel vault of the former Belle Époque railway station away from the rain."
+            },
+            {
+                "title": "Historic Covered Passages (Galerie Vivienne & Panoramas)",
+                "location": "2nd Arrondissement, Paris",
+                "category": "Historic Covered Arcades",
+                "estimated_cost": "Free",
+                "latitude": 48.8665,
+                "longitude": 2.3396,
+                "tips": "Stroll completely dry under 19th-century glass roofs lined with antiquarian bookstores, tea salons, and vintage boutiques."
+            },
+            {
+                "title": "Subterranean Wine Cellar Tasting & Candlelit Bistro",
+                "location": "Les Caves du Louvre, Paris",
+                "category": "Subterranean Romance & Dining",
+                "estimated_cost": "$38",
+                "latitude": 48.8615,
+                "longitude": 2.3411,
+                "tips": "Taste sommelier selections deep inside 18th-century vaulted royal stone cellars insulated from the weather."
+            }
         ]
     },
     "italy": {
@@ -236,6 +265,35 @@ DESTINATION_KNOWLEDGE = {
                 "price_range": "$$",
                 "latitude": 45.4387,
                 "longitude": 12.3347
+            }
+        ],
+        "rainy_day_landmarks": [
+            {
+                "title": "Vatican Museums, Sistine Chapel & Raphael Rooms (Indoor)",
+                "location": "Vatican City, Rome",
+                "category": "Renaissance Art & Indoor Refuge",
+                "estimated_cost": "$28",
+                "latitude": 41.9029,
+                "longitude": 12.4534,
+                "tips": "Stay completely dry inside miles of Renaissance galleries and papal palaces."
+            },
+            {
+                "title": "Galleria Doria Pamphilj & Mirror Hall",
+                "location": "Via del Corso, Rome",
+                "category": "Palace Gallery",
+                "estimated_cost": "$18",
+                "latitude": 41.8978,
+                "longitude": 12.4813,
+                "tips": "Private princely palace with Caravaggio masterpieces under gilded baroque ceilings."
+            },
+            {
+                "title": "Historic Roman Enoteca & Candlelit Trattoria",
+                "location": "Enoteca Il Gocchetto, Rome",
+                "category": "Warm Wine Cellar & Comfort Dining",
+                "estimated_cost": "$32",
+                "latitude": 41.9065,
+                "longitude": 12.4764,
+                "tips": "Cozy wooden cellar with hot cacio e pepe pasta and local vintage wines on rainy evenings."
             }
         ]
     },
@@ -321,6 +379,35 @@ DESTINATION_KNOWLEDGE = {
                 "latitude": 35.0050,
                 "longitude": 135.7649
             }
+        ],
+        "rainy_day_landmarks": [
+            {
+                "title": "Sanjusangendo Temple (Hall of 1,001 Golden Statues)",
+                "location": "Higashiyama Ward, Kyoto",
+                "category": "Sacred Indoor Temple",
+                "estimated_cost": "$6",
+                "latitude": 34.9878,
+                "longitude": 135.7717,
+                "tips": "Walk quietly along the long wooden hall admiring 1,001 life-sized gilded Kannon statues protected from weather."
+            },
+            {
+                "title": "Nishiki Covered Market & Traditional Tea Ceremony",
+                "location": "Nakagyo Ward, Kyoto",
+                "category": "Covered Artisan Arcade",
+                "estimated_cost": "$15",
+                "latitude": 35.0050,
+                "longitude": 135.7649,
+                "tips": "Five blocks of vibrant covered stalls filled with warm street delicacies, pickles, and steaming matcha."
+            },
+            {
+                "title": "Pontocho Covered Alley Hot Pot & Sukiyaki Dining",
+                "location": "Pontocho Alley, Kyoto",
+                "category": "Cozy Dining",
+                "estimated_cost": "$35",
+                "latitude": 35.0058,
+                "longitude": 135.7715,
+                "tips": "Savor steaming Wagyu sukiyaki hot pot overlooking the rain droplets rippling across the Kamogawa River."
+            }
         ]
     }
 }
@@ -392,6 +479,35 @@ def get_attractions_and_dining(destination: str) -> Dict[str, Any]:
                 "price_range": "$$",
                 "latitude": None,
                 "longitude": None
+            }
+        ],
+        "rainy_day_landmarks": [
+            {
+                "title": f"{dest_title} Fine Arts Museum & Heritage Pavilion",
+                "location": f"Cultural District, {dest_title}",
+                "category": "Museum & Indoor Shelter",
+                "estimated_cost": "$18",
+                "latitude": None,
+                "longitude": None,
+                "tips": "Spend a rainy morning exploring climate-controlled galleries and historical treasures."
+            },
+            {
+                "title": f"Covered Artisan Bazaar & Historic Tea Rooms",
+                "location": f"Old Town Arcades, {dest_title}",
+                "category": "Covered Promenade",
+                "estimated_cost": "Free",
+                "latitude": None,
+                "longitude": None,
+                "tips": "Browse dry beneath historic glass and stone vaults."
+            },
+            {
+                "title": f"Candlelit Underground Cellar & Regional Tasting",
+                "location": f"Historic Center, {dest_title}",
+                "category": "Cellar Experience",
+                "estimated_cost": "$30",
+                "latitude": None,
+                "longitude": None,
+                "tips": "Warm up with comforting regional specialties in an atmospheric stone setting."
             }
         ]
     }
