@@ -280,6 +280,455 @@ DESTINATION_HUBS: Dict[str, List[Dict[str, Any]]] = {
             "vibe": "Passionate & Historic",
             "badge": "Soul of Andalusia"
         }
+    ],
+    "india": [
+        # --- NORTH INDIA ---
+        {
+            "name": "Ladakh & Pangong Tso Lake",
+            "region": "Jammu & Kashmir / Ladakh",
+            "direction": "North",
+            "tagline": "Turquoise high-altitude salt lake surrounded by barren Himalayan peaks, where Bollywood cinematic dreams come to life.",
+            "must_see_landmarks": [
+                "Pangong Tso Lake (3 Idiots Climax Spot)",
+                "Khardung La Pass (Highest Motorroad in the World)",
+                "Nubra Valley & Hunder Sand Dunes (Double-Humped Camels)",
+                "Thiksey & Hemis Ancient Monasteries",
+                "Magnetic Hill & Indus Zanskar Confluence"
+            ],
+            "best_for": "Cinematic Landscapes, High-Altitude Adventure & Buddhist Culture",
+            "recommended_stay": "4 - 5 Days",
+            "vibe": "Ethereal & Adventurous",
+            "badge": "🎬 3 Idiots Climax",
+            "movie_locations": [
+                "3 Idiots (Pia's yellow scooter reunion with Rancho at Pangong Lake)",
+                "Jab Tak Hai Jaan (Shah Rukh Khan defusing explosive at freezing waters)",
+                "Dil Se (Shah Rukh Khan & Manisha Koirala 'Satrangi Re')"
+            ],
+            "featured_movie": "3 Idiots",
+            "latitude": 33.7595,
+            "longitude": 78.6674
+        },
+        {
+            "name": "Manali & Solang Valley (Himachal)",
+            "region": "Himachal Pradesh",
+            "direction": "North",
+            "tagline": "Snow-capped cedar valleys, roaring Beas river rapids, and the quintessential youthful Bollywood backpacking playground.",
+            "must_see_landmarks": [
+                "Rohtang Pass Snow Corridor",
+                "Solang Valley Adventure Glades",
+                "Hadimba Devi Historic Wooden Temple",
+                "Old Manali Cafes & Beas River Walk",
+                "Jogini Waterfalls Trek"
+            ],
+            "best_for": "Snow Adventures, Trekking & Bollywood Romance",
+            "recommended_stay": "3 - 4 Days",
+            "vibe": "Youthful & Alpine",
+            "badge": "🎬 Yeh Jawaani Hai Deewani Trek",
+            "movie_locations": [
+                "Yeh Jawaani Hai Deewani (Bunny & Naina's iconic friendship snow trek)",
+                "Jab We Met (Geet & Aditya dancing in snow corridors 'Yeh Ishq Haaye')",
+                "Krrish (Mountain chases)",
+                "Highway (Alia Bhatt's mountain journey)"
+            ],
+            "featured_movie": "Yeh Jawaani Hai Deewani",
+            "latitude": 32.2432,
+            "longitude": 77.1892
+        },
+        {
+            "name": "Kashmir Valley (Srinagar & Gulmarg)",
+            "region": "Jammu & Kashmir",
+            "direction": "North",
+            "tagline": "Paradise on Earth: floating shikaras on Dal Lake, blooming tulip gardens, and the world's highest ski gondola in Gulmarg.",
+            "must_see_landmarks": [
+                "Dal Lake Floating Houseboats & Shikararides",
+                "Gulmarg Gondola & Apharwat Peak",
+                "Mughal Terraced Gardens (Shalimar & Nishat)",
+                "Pahalgam Betaab Valley & Aru Valley",
+                "Pari Mahal Twilight Hillside"
+            ],
+            "best_for": "Romance, Alpine Gondolas & Traditional Crafts",
+            "recommended_stay": "4 - 5 Days",
+            "vibe": "Romantic & Heavenly",
+            "badge": "🎬 Bajrangi Bhaijaan & Rockstar",
+            "movie_locations": [
+                "Bajrangi Bhaijaan (Salman Khan reuniting Munni in scenic valleys)",
+                "Rockstar (Ranbir Kapoor & Nargis Fakhri 'Katiya Karun')",
+                "Yeh Jawaani Hai Deewani (Gulmarg snow sequences)",
+                "Mission Kashmir",
+                "Kashmir Ki Kali"
+            ],
+            "featured_movie": "Bajrangi Bhaijaan",
+            "latitude": 34.0837,
+            "longitude": 74.8370
+        },
+        {
+            "name": "Agra & Delhi Capital Heritage",
+            "region": "Northern Heritage Corridor",
+            "direction": "North",
+            "tagline": "The royal Mughal power corridors: marble poetry of the Taj Mahal, historic red sandstone fortresses & ancient stepwells.",
+            "must_see_landmarks": [
+                "Taj Mahal & Mehtab Bagh Sunset",
+                "Agra Fort Imperial Palaces",
+                "India Gate & Kartavya Path",
+                "Agrasen Ki Baoli Ancient Stepwell",
+                "Red Fort & Chandni Chowk Culinary Walk"
+            ],
+            "best_for": "World Wonders, Mughal Architecture & Historic Lore",
+            "recommended_stay": "3 - 4 Days",
+            "vibe": "Monumental & Regal",
+            "badge": "🎬 Rang De Basanti & PK",
+            "movie_locations": [
+                "Rang De Basanti (Torchlight student rally around India Gate)",
+                "PK (Aamir Khan taking shelter at Agrasen Ki Baoli stepwell)",
+                "Slumdog Millionaire (Taj Mahal tours)",
+                "Chak De! India (National stadium and India Gate victory)"
+            ],
+            "featured_movie": "Rang De Basanti",
+            "latitude": 27.1751,
+            "longitude": 78.0421
+        },
+
+        # --- SOUTH INDIA ---
+        {
+            "name": "Athirappilly & Munnar Highlands (Kerala)",
+            "region": "Western Ghats, Kerala",
+            "direction": "South",
+            "tagline": "The thunderous 'Niagara of India' plunging into tropical rainforests and emerald carpeted tea hills.",
+            "must_see_landmarks": [
+                "Athirappilly Waterfalls (Baahubali Torrential Falls)",
+                "Munnar Kolukkumalai Sunrise Tea Estate",
+                "Mattupetty Dam & Eco Point",
+                "Vazhachal Forest Waterfalls",
+                "Eravikulam National Park (Nilgiri Tahr)"
+            ],
+            "best_for": "Epic Waterfalls, Tea Plantations & Jungle Escapes",
+            "recommended_stay": "3 - 4 Days",
+            "vibe": "Lush & Majestic",
+            "badge": "🎬 Baahubali Waterfall",
+            "movie_locations": [
+                "Baahubali: The Beginning (Shivudu climbing the majestic 80-ft Athirappilly waterfall)",
+                "Dil Se (Shah Rukh Khan & Preity Zinta 'Jiya Jale')",
+                "Chennai Express (Deepika & SRK 'Kashmir Main Tu Kanyakumari' in Munnar tea hills)",
+                "Raavan (Aishwarya Rai & Abhishek Bachchan cliff sequences)",
+                "Life of Pi (Suraj Sharma gazing at Munnar green slopes)"
+            ],
+            "featured_movie": "Baahubali",
+            "latitude": 10.2851,
+            "longitude": 76.5698
+        },
+        {
+            "name": "Hampi UNESCO Ruins & Stone Chariot",
+            "region": "Karnataka",
+            "direction": "South",
+            "tagline": "A surreal boulder-strewn open-air museum: 14th-century capital of the Vijayanagara Empire on the banks of the Tungabhadra.",
+            "must_see_landmarks": [
+                "Vijaya Vittala Temple & Stone Chariot",
+                "Virupaksha Sacred Riverside Temple",
+                "Matanga Hill Sunrise Panorama",
+                "Coracle Boat Ride on Tungabhadra River",
+                "Lotus Mahal & Royal Elephant Stables"
+            ],
+            "best_for": "Ancient Empire Archaeology, Bouldering & Rustic Serenity",
+            "recommended_stay": "2 - 3 Days",
+            "vibe": "Mystical & Timeless",
+            "badge": "🎬 Rowdy Rathore & The Myth",
+            "movie_locations": [
+                "Rowdy Rathore (Akshay Kumar 'Dhadang Dhang' dance at stone ruins)",
+                "The Myth (Jackie Chan martial arts action among Hampi monoliths)",
+                "K.G.F (Historical backdrop aesthetic)",
+                "Magadheera"
+            ],
+            "featured_movie": "Rowdy Rathore",
+            "latitude": 15.3350,
+            "longitude": 76.4600
+        },
+        {
+            "name": "Ooty & Nilgiri Mountain Railway",
+            "region": "Tamil Nadu",
+            "direction": "South",
+            "tagline": "The Queen of Hill Stations: century-old blue steam toy trains, fragrant eucalyptus groves & romantic pine forests.",
+            "must_see_landmarks": [
+                "Nilgiri Mountain UNESCO Steam Railway",
+                "Ooty Pine Forest & Kamraj Sagar Dam",
+                "Doddabetta Highest Peak Lookout",
+                "Botanical Gardens & Rose Pavilion",
+                "Pykara Waterfalls & Boating Lake"
+            ],
+            "best_for": "Toy Train Rides, Cool Weather & Classic Cinema Nostalgia",
+            "recommended_stay": "2 - 3 Days",
+            "vibe": "Colonial Charm & Romantic",
+            "badge": "🎬 Dil Se (Chaiyya Chaiyya)",
+            "movie_locations": [
+                "Dil Se (Shah Rukh Khan & Malaika Arora dancing on moving steam train roof 'Chaiyya Chaiyya')",
+                "Barfi! (Ranbir Kapoor & Ileana D'Cruz romantic misty hill sequences)",
+                "Kuch Kuch Hota Hai (The iconic Shimla summer camp was shot in Ooty pine forests)",
+                "Andaz Apna Apna"
+            ],
+            "featured_movie": "Dil Se",
+            "latitude": 11.4102,
+            "longitude": 76.6950
+        },
+        {
+            "name": "Ramoji Film City & Hyderabad",
+            "region": "Telangana",
+            "direction": "South",
+            "tagline": "The world's largest film studio city where grand cinema illusions are born, alongside 400-year-old Charminar alleys.",
+            "must_see_landmarks": [
+                "Ramoji Film City Studio Tours & Baahubali Sets",
+                "Charminar & Laad Bazaar Chime",
+                "Golconda Fort Acoustic Sound & Light Show",
+                "Qutb Shahi Royal Tombs",
+                "Hussain Sagar Lake & Buddha Statue"
+            ],
+            "best_for": "Cinema Sets, Royal Nizami Culture & World-Famous Biryani",
+            "recommended_stay": "3 Days",
+            "vibe": "Cinematic & Nizami Grandeur",
+            "badge": "🎬 World's Largest Film Studio",
+            "movie_locations": [
+                "Baahubali 1 & 2 (Complete Mahishmati Kingdom set standing)",
+                "RRR (Grand British palace and forest confrontation sets)",
+                "Pushpa (Action sequences)",
+                "Chennai Express (South Indian village sets)"
+            ],
+            "featured_movie": "Baahubali (Ramoji Sets)",
+            "latitude": 17.2543,
+            "longitude": 78.6808
+        },
+
+        # --- WEST INDIA ---
+        {
+            "name": "Goa Coastal Forts & Dudhsagar Falls",
+            "region": "Goa & Western Ghats",
+            "direction": "West",
+            "tagline": "Sun-kissed Arabian Sea beaches, Portuguese clifftop ramparts, and thunderous milky cascades through jungle rail bridges.",
+            "must_see_landmarks": [
+                "Chapora Fort ('Dil Chahta Hai Fort' over Vagator)",
+                "Dudhsagar Waterfalls & Jungle Jeep Safari",
+                "Fort Aguada 17th-Century Lighthouse",
+                "Old Goa UNESCO Basilica of Bom Jesus",
+                "Palolem & Morjim Sunset Coastlines"
+            ],
+            "best_for": "Beach Vibe, Friendship Getaways & Seafront Forts",
+            "recommended_stay": "4 - 5 Days",
+            "vibe": "Bohemian & Coastal",
+            "badge": "🎬 Dil Chahta Hai Fort",
+            "movie_locations": [
+                "Dil Chahta Hai (The iconic Akash, Sameer, and Sid sitting on Chapora Fort walls)",
+                "Chennai Express (The legendary train stopping scene at Dudhsagar Falls)",
+                "Dhoom & Golmaal series",
+                "Dear Zindagi (Alia Bhatt & SRK cycling along North Goa palms)"
+            ],
+            "featured_movie": "Dil Chahta Hai",
+            "latitude": 15.6060,
+            "longitude": 73.7380
+        },
+        {
+            "name": "Udaipur & Royal Lakes (Rajasthan)",
+            "region": "Mewar, Rajasthan",
+            "direction": "West",
+            "tagline": "The Venice of the East: floating marble palaces on Lake Pichola, peacock mosaics & world-famous grand destination weddings.",
+            "must_see_landmarks": [
+                "The Oberoi Udaivilas & Jagmandir Island Palace",
+                "City Palace Complex & Peacock Courtyard",
+                "Sunset Boat Cruise on Lake Pichola",
+                "Monsoon Palace (Sajjangarh Clifftop)",
+                "Saheliyon-ki-Bari Royal Lotus Fountains"
+            ],
+            "best_for": "Regal Romance, Destination Weddings & Lake Palaces",
+            "recommended_stay": "3 - 4 Days",
+            "vibe": "Regal & Romantic",
+            "badge": "🎬 YJHD Grand Wedding",
+            "movie_locations": [
+                "Yeh Jawaani Hai Deewani (Aditi & Taran's grand royal palace wedding at Oberoi Udaivilas)",
+                "Octopussy (James Bond 007 floating palace)",
+                "Goliyon Ki Raasleela Ram-Leela (Deepika & Ranveer palace romance)",
+                "Guide (Dev Anand & Waheeda Rehman classic)"
+            ],
+            "featured_movie": "Yeh Jawaani Hai Deewani (Wedding)",
+            "latitude": 24.5764,
+            "longitude": 73.6734
+        },
+        {
+            "name": "Mumbai Cinema Capital & Marine Drive",
+            "region": "Maharashtra",
+            "direction": "West",
+            "tagline": "The City of Dreams: the Queen's Necklace promenade, Victorian Gothic heritage & the beating heart of Bollywood.",
+            "must_see_landmarks": [
+                "Marine Drive & Chowpatty Beach Sunset",
+                "Gateway of India & Taj Mahal Palace Hotel",
+                "Chhatrapati Shivaji Maharaj Terminus (UNESCO)",
+                "Bandra Bandstand & Filmstar Mansions (Mannat & Galaxy)",
+                "Colaba Causeway & Cafe Leopold"
+            ],
+            "best_for": "Bollywood Industry, Coastal Promenades & High Energy",
+            "recommended_stay": "3 - 4 Days",
+            "vibe": "Electrifying & Iconic",
+            "badge": "🎬 Wake Up Sid & Slumdog",
+            "movie_locations": [
+                "Wake Up Sid (Sid & Aisha standing at Marine Drive in the monsoon rain)",
+                "Slumdog Millionaire (CST railway station 'Jai Ho' dance)",
+                "Jaane Tu... Ya Jaane Na (Airport chase from Bandra)",
+                "Gully Boy (Dharavi & Mumbai street hip-hop)"
+            ],
+            "featured_movie": "Wake Up Sid",
+            "latitude": 18.9220,
+            "longitude": 72.8347
+        },
+        {
+            "name": "Jaipur & Amber Fort (Rajasthan)",
+            "region": "Rajasthan",
+            "direction": "West",
+            "tagline": "The Pink City: grand sandstone ramparts soaring above Maota Lake, mirror palaces & the iconic Nahargarh baori jump.",
+            "must_see_landmarks": [
+                "Amer Fort & Sheesh Mahal (Mirror Palace)",
+                "Nahargarh Fort & Stepwell Sunset",
+                "Hawa Mahal (Palace of Winds)",
+                "City Palace & Jantar Mantar Observatory",
+                "Jaigarh Fort (World's Largest Wheeled Cannon)"
+            ],
+            "best_for": "Fortresses, Royal Rajput History & Textile Bazaars",
+            "recommended_stay": "2 - 3 Days",
+            "vibe": "Royal & Vibrant",
+            "badge": "🎬 Rang De Basanti Beer Jump",
+            "movie_locations": [
+                "Rang De Basanti (Aamir Khan & Sharman Joshi jumping into Nahargarh stepwell 'Masti Ki Paathshaala')",
+                "Bajirao Mastani & Jodhaa Akbar (Amer Fort palace scenes)",
+                "Shuddh Desi Romance",
+                "Khoobsurat"
+            ],
+            "featured_movie": "Rang De Basanti (Jaipur)",
+            "latitude": 26.9855,
+            "longitude": 75.8513
+        },
+        {
+            "name": "Great Rann of Kutch White Desert",
+            "region": "Gujarat",
+            "direction": "West",
+            "tagline": "An endless glistening salt crust shining under moonlight, vibrant Kutchi embroidery & desert festival tents.",
+            "must_see_landmarks": [
+                "White Rann Endless Salt Flats",
+                "Kala Dungar (Black Hill Sunset Viewpoint)",
+                "Bhuj Aina Mahal & Prag Mahal",
+                "Hodka Artisan Craft & Mud Bhunga Villages",
+                "Dholavira Harappan Ancient UNESCO Metropolis"
+            ],
+            "best_for": "Moonlight Desert Walks, Artisan Crafts & Cultural Festivals",
+            "recommended_stay": "2 - 3 Days",
+            "vibe": "Mystical & Expansive",
+            "badge": "🎬 Hum Dil De Chuke Sanam",
+            "movie_locations": [
+                "Hum Dil De Chuke Sanam (Salman Khan & Aishwarya Rai desert sequences)",
+                "Lagaan (Aamir Khan cricket match filmed in surrounding Bhuj villages)",
+                "Goliyon Ki Raasleela Ram-Leela",
+                "Refugee"
+            ],
+            "featured_movie": "Hum Dil De Chuke Sanam",
+            "latitude": 23.8344,
+            "longitude": 69.8322
+        },
+
+        # --- EAST & NORTHEAST INDIA ---
+        {
+            "name": "Kolkata & Howrah Bridge Heritage",
+            "region": "West Bengal",
+            "direction": "East",
+            "tagline": "The Cultural Capital: yellow Ambassador taxis on Howrah Bridge, colonial white marble palaces & intellectual coffee houses.",
+            "must_see_landmarks": [
+                "Howrah Bridge & Hooghly River Ferry",
+                "Victoria Memorial & Maidan Green",
+                "Dakshineswar Kali Riverside Temple",
+                "College Street Book Market & Indian Coffee House",
+                "Kumartuli Artisan Idol Quarter"
+            ],
+            "best_for": "Art, Literature, Street Food & Soulful Nostalgia",
+            "recommended_stay": "3 - 4 Days",
+            "vibe": "Soulful & Intellectual",
+            "badge": "🎬 Piku & Kahaani",
+            "movie_locations": [
+                "Piku (Amitabh Bachchan cycling & driving over Howrah Bridge with Deepika)",
+                "Kahaani (Vidya Balan navigating Kolkata alleys and Durga Puja festival)",
+                "Yuva (Abhishek & Ajay Devgn on Vidyasagar Setu)",
+                "Barfi! (Calcutta tram ride scenes)",
+                "Detective Byomkesh Bakshy!"
+            ],
+            "featured_movie": "Piku",
+            "latitude": 22.5851,
+            "longitude": 88.3468
+        },
+        {
+            "name": "Darjeeling & Toy Train Tea Ridges",
+            "region": "Eastern Himalayas, West Bengal",
+            "direction": "East",
+            "tagline": "Misty emerald tea slopes facing Mt. Kanchenjunga, UNESCO heritage steam whistles & vibrant Tibetan monasteries.",
+            "must_see_landmarks": [
+                "Darjeeling Himalayan Railway (Toy Train) & Batasia Loop",
+                "Tiger Hill Dawn Sunrise over Mt. Kanchenjunga",
+                "Happy Valley Historic Tea Estate",
+                "Ghum Monastery & Peace Pagoda",
+                "Mall Road & Chowrasta Promenade"
+            ],
+            "best_for": "Himalayan Sunrise, Steam Trains & World-Famous Tea",
+            "recommended_stay": "3 - 4 Days",
+            "vibe": "Misty & Nostalgic",
+            "badge": "🎬 Barfi! & Main Hoon Na",
+            "movie_locations": [
+                "Barfi! (Ranbir Kapoor cycling alongside the puffing toy train)",
+                "Parineeta (Saif & Vidya 'Kasto Mazza' toy train song)",
+                "Main Hoon Na (Shah Rukh Khan arriving at St. Paul's School Darjeeling)",
+                "Aradhana (Rajesh Khanna & Sharmila Tagore 'Mere Sapno Ki Rani')"
+            ],
+            "featured_movie": "Barfi!",
+            "latitude": 27.0410,
+            "longitude": 88.2663
+        },
+        {
+            "name": "Cherrapunji & Living Root Bridges",
+            "region": "Meghalaya, Northeast",
+            "direction": "East",
+            "tagline": "The Abode of Clouds: bio-engineered living rubber tree bridges, crystal-clear river canyons & soaring jungle waterfalls.",
+            "must_see_landmarks": [
+                "Nongriat Double Decker Living Root Bridge",
+                "Nohkalikai Falls (India's Tallest Plunge Waterfall)",
+                "Dawki Umngot Crystal Clear Glass-like River",
+                "Mawsmai Limestone Caves",
+                "Mawlynnong (Cleanest Village in Asia)"
+            ],
+            "best_for": "Bio-Wonders, Rainforest Treks & Crystalline Waters",
+            "recommended_stay": "3 - 4 Days",
+            "vibe": "Untamed & Mystical",
+            "badge": "🎬 Rock On 2 & Living Roots",
+            "movie_locations": [
+                "Rock On 2 (Farhan Akhtar's serene Meghalaya retreat and Shillong acoustic jam)",
+                "Nature Bio-engineering Documentaries"
+            ],
+            "featured_movie": "Rock On 2",
+            "latitude": 25.2506,
+            "longitude": 91.6706
+        },
+        {
+            "name": "Kaziranga Wilderness & Assam",
+            "region": "Assam, Northeast",
+            "direction": "East",
+            "tagline": "UNESCO World Heritage floodplain grasslands, home to two-thirds of the world's Great Indian One-Horned Rhinoceroses.",
+            "must_see_landmarks": [
+                "Kaziranga Central Range Elephant & Jeep Safaris",
+                "One-Horned Rhinoceros & Wild Water Buffalo Encounters",
+                "Brahmaputra River Twilight Dolphin Cruise",
+                "Majuli Island (World's Largest River Island)",
+                "Assam Tea Garden Tasting Walk"
+            ],
+            "best_for": "Rare Wildlife Safaris, River Islands & Untouched Nature",
+            "recommended_stay": "2 - 3 Days",
+            "vibe": "Wild & Pristine",
+            "badge": "🎬 UNESCO Wildlife Haven",
+            "movie_locations": [
+                "Anek (Ayushmann Khurrana Northeast wilderness narrative)",
+                "National Geographic & Wildlife Documentaries"
+            ],
+            "featured_movie": "Anek",
+            "latitude": 26.5775,
+            "longitude": 93.1711
+        }
     ]
 }
 
@@ -292,9 +741,15 @@ def get_destination_sightseeing_hubs(destination: str) -> List[Dict[str, Any]]:
     """
     dest_clean = destination.strip().lower() if destination else "france"
 
+    # Explicit India aliases
+    india_keywords = ["india", "bharat", "delhi", "mumbai", "goa", "kerala", "manali", "ladakh", "kashmir", "hampi", "ooty", "jaipur", "udaipur", "kolkata", "darjeeling", "bollywood", "tollywood", "chennai", "hyderabad", "bengaluru", "bangalore", "rajasthan", "meghalaya", "assam", "punjab", "himachal", "uttarakhand"]
+    if any(kw in dest_clean for kw in india_keywords):
+        return DESTINATION_HUBS["india"]
+
     for key, hubs in DESTINATION_HUBS.items():
         if key in dest_clean or any(h["name"].lower().split()[0] in dest_clean for h in hubs):
             return hubs
+
 
     # Universal intelligent generator for any worldwide location
     dest_title = destination.strip().title() if destination else "Global Destination"

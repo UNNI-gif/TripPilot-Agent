@@ -16,6 +16,18 @@ def get_destination_hubs(destination: str = "France"):
     hubs = get_destination_sightseeing_hubs(destination)
     return [SightseeingHub(**h) for h in hubs]
 
+@router.get("/sightseeing/cinema-locations", response_model=List[SightseeingHub])
+def get_cinema_locations(direction: Optional[str] = None):
+    """
+    Get top sightseeing and famous Bollywood/Tollywood/Indian cinema shooting locations
+    across North, South, East, and West India with exact GPS coordinates.
+    """
+    hubs = get_destination_sightseeing_hubs("India")
+    if direction and direction.lower() != "all":
+        hubs = [h for h in hubs if h.get("direction", "").lower() == direction.lower()]
+    return [SightseeingHub(**h) for h in hubs]
+
+
 @router.get("", response_model=List[dict])
 def list_trips(db: Session = Depends(get_db)):
     """List all saved itineraries."""

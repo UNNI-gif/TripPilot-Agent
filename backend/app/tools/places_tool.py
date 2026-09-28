@@ -409,6 +409,181 @@ DESTINATION_KNOWLEDGE = {
                 "tips": "Savor steaming Wagyu sukiyaki hot pot overlooking the rain droplets rippling across the Kamogawa River."
             }
         ]
+    },
+    "india": {
+        "landmarks": [
+            {
+                "title": "Pangong Tso Lake (3 Idiots Climax Spot)",
+                "location": "Leh, Ladakh",
+                "category": "Cinema Landmark & Alpine Lake",
+                "estimated_cost": "Free",
+                "latitude": 33.7595,
+                "longitude": 78.6674,
+                "tips": "Famed shooting spot of 3 Idiots climax where Pia meets Rancho with the yellow scooter. Visit during morning sunlight for vivid turquoise shades."
+            },
+            {
+                "title": "Rohtang Pass & Solang Valley (YJHD Snow Trek)",
+                "location": "Manali, Himachal Pradesh",
+                "category": "Himalayan Snow & Cinema Lore",
+                "estimated_cost": "$15",
+                "latitude": 32.3716,
+                "longitude": 77.2466,
+                "tips": "Legendary filming spot of Yeh Jawaani Hai Deewani (Bunny & Naina's snow trek) and Jab We Met ('Yeh Ishq Haaye')."
+            },
+            {
+                "title": "Athirappilly Waterfalls (Baahubali Niagara of India)",
+                "location": "Chalakudy, Thrissur, Kerala",
+                "category": "Epic Cinema Waterfall",
+                "estimated_cost": "$2",
+                "latitude": 10.2851,
+                "longitude": 76.5698,
+                "tips": "The awe-inspiring 80-foot cascade that Shivudu climbs in Baahubali and backdrop of Dil Se ('Jiya Jale')."
+            },
+            {
+                "title": "Chapora Fort ('Dil Chahta Hai Fort')",
+                "location": "Vagator, North Goa",
+                "category": "Clifftop Sea Fort",
+                "estimated_cost": "Free",
+                "latitude": 15.6060,
+                "longitude": 73.7380,
+                "tips": "Sit along the red laterite ramparts overlooking the Arabian Sea, echoing the iconic Dil Chahta Hai conversation."
+            },
+            {
+                "title": "Dudhsagar Waterfalls & Railway Arch Bridge",
+                "location": "Sonaulim, Goa / Karnataka Border",
+                "category": "Four-Tiered Waterfall & Rail Arch",
+                "estimated_cost": "$12",
+                "latitude": 15.3144,
+                "longitude": 74.3143,
+                "tips": "World-famous filming spot from Chennai Express where the train halts before roaring milky cascades."
+            },
+            {
+                "title": "The Oberoi Udaivilas & Lake Pichola",
+                "location": "Udaipur, Rajasthan",
+                "category": "Royal Palace & Luxury Vistas",
+                "estimated_cost": "Free",
+                "latitude": 24.5764,
+                "longitude": 73.6734,
+                "tips": "Iconic royal palace where Aditi and Taran's grand wedding was filmed in Yeh Jawaani Hai Deewani."
+            },
+            {
+                "title": "Hampi Vijaya Vittala Temple & Stone Chariot",
+                "location": "Hampi, Vijayanagara, Karnataka",
+                "category": "UNESCO World Heritage Monolith",
+                "estimated_cost": "$5",
+                "latitude": 15.3350,
+                "longitude": 76.4600,
+                "tips": "Featured in Rowdy Rathore and Jackie Chan's The Myth. Explore the boulder landscape during sunset."
+            },
+            {
+                "title": "Nilgiri Mountain Railway (Chaiyya Chaiyya Train)",
+                "location": "Ooty, Tamil Nadu",
+                "category": "UNESCO Heritage Steam Railway",
+                "estimated_cost": "$4",
+                "latitude": 11.4102,
+                "longitude": 76.6950,
+                "tips": "Filming location of the historic 'Chaiyya Chaiyya' song from Dil Se, running through misty pine eucalyptus forests."
+            },
+            {
+                "title": "Marine Drive & Gateway of India",
+                "location": "South Mumbai, Maharashtra",
+                "category": "Cinema Promenade & Monument",
+                "estimated_cost": "Free",
+                "latitude": 18.9220,
+                "longitude": 72.8347,
+                "tips": "Featured in Wake Up Sid and Slumdog Millionaire. Enjoy roasted corn on the cob watching twilight over the Arabian Sea."
+            },
+            {
+                "title": "Taj Mahal & Mehtab Bagh Sunset",
+                "location": "Agra, Uttar Pradesh",
+                "category": "Mughal World Wonder",
+                "estimated_cost": "$15",
+                "latitude": 27.1751,
+                "longitude": 78.0421,
+                "tips": "View the white marble dome glowing pink at sunset across the Yamuna River from Mehtab Bagh."
+            },
+            {
+                "title": "Howrah Bridge & Victoria Memorial",
+                "location": "Kolkata, West Bengal",
+                "category": "Colonial & Cantilever Heritage",
+                "estimated_cost": "Free",
+                "latitude": 22.5851,
+                "longitude": 88.3468,
+                "tips": "Featured in Piku, Kahaani, and Yuva. Ride a vintage yellow Ambassador taxi across the iconic steel cantilever."
+            },
+            {
+                "title": "Darjeeling Himalayan Railway & Batasia Loop",
+                "location": "Darjeeling, West Bengal",
+                "category": "UNESCO Mountain Steam Train",
+                "estimated_cost": "$8",
+                "latitude": 27.0410,
+                "longitude": 88.2663,
+                "tips": "Filming setting for Barfi!, Parineeta, and Main Hoon Na with 360-degree views of Mt. Kanchenjunga."
+            }
+        ],
+        "dining": [
+            {
+                "name": "Bukhara / Karim's (Delhi)",
+                "cuisine": "Royal Mughlai & Tandoor",
+                "recommended_dish": "Slow-cooked Dal Bukhara & Sikandari Raan",
+                "price_range": "$$$",
+                "latitude": 28.5975,
+                "longitude": 77.1738
+            },
+            {
+                "name": "Cafe Leopold & Mondegar (Colaba, Mumbai)",
+                "cuisine": "Historic Bombay Cafe & Beer",
+                "recommended_dish": "Spicy Keema Pav & Classic Cold Draft",
+                "price_range": "$$",
+                "latitude": 18.9234,
+                "longitude": 72.8326
+            },
+            {
+                "name": "Ambrai at Amet Haveli (Udaipur)",
+                "cuisine": "Mewari Royal Dining",
+                "recommended_dish": "Laal Maas with Lake Pichola Illuminated Views",
+                "price_range": "$$$",
+                "latitude": 24.5802,
+                "longitude": 73.6811
+            },
+            {
+                "name": "Paragon Seafood (Kozhikode / Kerala)",
+                "cuisine": "Authentic Malabar Seafood",
+                "recommended_dish": "Malabar Fish Biryani & Meen Pollichathu",
+                "price_range": "$$",
+                "latitude": 11.2588,
+                "longitude": 75.7804
+            }
+        ],
+        "rainy_day_landmarks": [
+            {
+                "title": "Chhatrapati Shivaji Maharaj Vastu Sangrahalaya (CSMVS Museum)",
+                "location": "Fort, South Mumbai",
+                "category": "Indo-Saracenic Art Museum & Refuge",
+                "estimated_cost": "$6",
+                "latitude": 18.9269,
+                "longitude": 72.8326,
+                "tips": "Spend a rainy afternoon sheltered inside ornate Indo-Saracenic galleries filled with Indian miniature paintings and ancient sculptures."
+            },
+            {
+                "title": "City Palace Museum & Crystal Gallery (Udaipur)",
+                "location": "Old City, Udaipur, Rajasthan",
+                "category": "Royal Palace Interior & Crystal Hall",
+                "estimated_cost": "$8",
+                "latitude": 24.5764,
+                "longitude": 73.6835,
+                "tips": "Wander through sheltered mirrored corridors, peacock mosaics, and the world's single largest private crystal collection."
+            },
+            {
+                "title": "National Rail Museum Heritage Indoor Saloons",
+                "location": "Chanakyapuri, New Delhi",
+                "category": "Historic Royal Trains & Indoor Exhibition",
+                "estimated_cost": "$3",
+                "latitude": 28.5855,
+                "longitude": 77.1802,
+                "tips": "Step inside Maharaja royal train carriages and indoor exhibits showcasing 170 years of Indian rail heritage."
+            }
+        ]
     }
 }
 
@@ -418,6 +593,11 @@ def get_attractions_and_dining(destination: str) -> Dict[str, Any]:
     """
     dest_clean = destination.strip().lower() if destination else "france"
     
+    # India aliases
+    india_aliases = ["india", "bharat", "delhi", "mumbai", "goa", "kerala", "manali", "ladakh", "kashmir", "hampi", "ooty", "jaipur", "udaipur", "kolkata", "darjeeling", "bollywood", "tollywood", "chennai", "hyderabad", "bengaluru", "bangalore", "rajasthan"]
+    if any(alias in dest_clean for alias in india_aliases):
+        return DESTINATION_KNOWLEDGE["india"]
+
     # Check knowledge base
     for key, data in DESTINATION_KNOWLEDGE.items():
         if key in dest_clean:

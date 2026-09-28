@@ -143,5 +143,15 @@ export const apiService = {
   async getHealth() {
     const response = await apiClient.get('/health');
     return response.data;
+  },
+
+  // Sightseeing & Cinema Locations
+  async getCinemaLocations(direction = null) {
+    const url = direction && direction !== 'all' 
+      ? `/trips/sightseeing/cinema-locations?direction=${encodeURIComponent(direction)}` 
+      : '/trips/sightseeing/cinema-locations';
+    const response = await apiClient.get(url);
+    return response.data;
   }
 };
+

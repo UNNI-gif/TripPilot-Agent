@@ -12,6 +12,8 @@ import { Plane, Building2, Calendar, DollarSign, Compass, MapPin } from 'lucide-
 export function ItineraryBoard({ tripPlan, onUpdateTripPlan, onSendMessage }) {
   const [activeTab, setActiveTab] = useState('all'); // 'all', or 'day-X'
   const [activeSection, setActiveSection] = useState('itinerary'); // 'itinerary', 'map', 'sightseeing', 'stays_flights', 'budget'
+  const [focusedLocation, setFocusedLocation] = useState(null);
+
 
   // Activity Edit Modal State
   const [editModalState, setEditModalState] = useState({
@@ -224,7 +226,12 @@ export function ItineraryBoard({ tripPlan, onUpdateTripPlan, onSendMessage }) {
       )}
 
       {activeSection === 'map' && (
-        <TripMap itinerary={itinerary} destination={destination} />
+        <TripMap 
+          itinerary={itinerary} 
+          destination={destination} 
+          focusedLocation={focusedLocation}
+          onClearFocus={() => setFocusedLocation(null)}
+        />
       )}
 
       {activeSection === 'sightseeing' && (
@@ -236,8 +243,13 @@ export function ItineraryBoard({ tripPlan, onUpdateTripPlan, onSendMessage }) {
               onSendMessage(`Plan my holiday around ${hub.name} in ${destination}. Include its key sights like ${hub.must_see_landmarks?.slice(0, 2).join(' and ')}.`);
             }
           }}
+          onShowOnMap={(hub) => {
+            setFocusedLocation(hub);
+            setActiveSection('map');
+          }}
         />
       )}
+
 
       {activeSection === 'stays_flights' && (
         <div className="space-y-6">

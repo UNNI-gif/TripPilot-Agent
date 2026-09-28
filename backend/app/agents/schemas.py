@@ -79,6 +79,11 @@ class SightseeingHub(BaseModel):
     recommended_stay: str = Field(..., description="Ideal duration, e.g. '4 - 5 Days'")
     vibe: str = Field("Iconic", description="Travel vibe")
     badge: Optional[str] = Field(None, description="e.g. 'Must-Visit Capital', 'Coastal Paradise', 'Wine & Châteaux'")
+    direction: Optional[str] = Field(None, description="Direction or Cardinal Zone: North, South, East, West, Central")
+    movie_locations: List[str] = Field(default_factory=list, description="Famous movie shooting spots and films shot here")
+    featured_movie: Optional[str] = Field(None, description="Iconic film name shot here (e.g. '3 Idiots', 'Baahubali', 'Dil Chahta Hai')")
+    latitude: Optional[float] = Field(None, description="Exact latitude for map plotting")
+    longitude: Optional[float] = Field(None, description="Exact longitude for map plotting")
 
 class TripPlanResponse(BaseModel):
     id: Optional[int] = None

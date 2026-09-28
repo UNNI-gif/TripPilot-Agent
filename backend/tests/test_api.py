@@ -140,5 +140,45 @@ def test_rainy_day_and_pacing_barometer():
         assert 48.8 <= act["latitude"] <= 48.9
         assert 2.2 <= act["longitude"] <= 2.4
 
+def test_india_cinema_locations_all_directions():
+    response = client.get("/api/trips/sightseeing/cinema-locations")
+    assert response.status_code == 200
+    locations = response.json()
+    assert len(locations) >= 15
+    
+    # Check all 4 cardinal directions are represented
+    directions = {loc.get("direction") for loc in locations}
+    assert "North" in directions
+    assert "South" in directions
+    assert "West" in directions
+    assert "East" in directions
+    
+    # Check key iconic movies and exact GPS
+    names = [loc["name"] for loc in locations]
+    assert any("Pangong" in n for n in names) # 3 Idiots
+    assert any("Athirappilly" in n for n in names) # Baahubali
+    assert any("Goa" in n for n in names) # Dil Chahta Hai & Chennai Express
+    assert any("Howrah" in n for n in names) # Piku
+
+    # Check Chapora Fort is in landmarks or movie locations
+    all_landmarks = [lm for loc in locations for lm in loc.get("must_see_landmarks", [])]
+    assert any("Chapora" in lm for lm in all_landmarks)
+
+    
+    for loc in locations:
+        assert loc["latitude"] is not None and loc["longitude"] is not None
+        assert 8.0 <= loc["latitude"] <= 37.0 # Valid Indian latitude range
+        assert 68.0 <= loc["longitude"] <= 98.0 # Valid Indian longitude range
+
+def test_india_direction_filter():
+    for d in ["North", "South", "West", "East"]:
+        resp = client.get(f"/api/trips/sightseeing/cinema-locations?direction={d}")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data) >= 3
+        for item in data:
+            assert item["direction"] == d
+
+
 
 
