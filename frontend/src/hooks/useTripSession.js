@@ -9,6 +9,7 @@ export function useTripSession() {
   const [currentTrip, setCurrentTrip] = useState(null);
   const [savedTrips, setSavedTrips] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [agentStatus, setAgentStatus] = useState(null); // { type: 'tool' | 'thought', text: string }
   const [error, setError] = useState(null);
 
   // Sync session id to localStorage
@@ -32,21 +33,91 @@ export function useTripSession() {
     refreshSavedTrips();
   }, [refreshSavedTrips]);
 
-  // Send message
+  // Stream chat message with real-time SSE
   const sendMessage = async (userText, options = {}) => {
     if (!userText.trim()) return;
 
-    const optimisticMsg = {
+    const optimisticUserMsg = {
       id: Date.now(),
       role: 'user',
       content: userText,
       created_at: new Date().toISOString(),
     };
 
-    setMessages((prev) => [...prev, optimisticMsg]);
+    const assistantMsgId = Date.now() + 1;
+    const optimisticAssistantMsg = {
+      id: assistantMsgId,
+      role: 'assistant',
+      content: '',
+      trip_data: null,
+      created_at: new Date().toISOString(),
+    };
+
+    setMessages((prev) => [...prev, optimisticUserMsg, optimisticAssistantMsg]);
     setIsLoading(true);
     setError(null);
+    setAgentStatus({ type: 'thought', text: 'Initializing TripPilot agent...' });
 
+    let accumulatedText = '';
+    let receivedPlan = null;
+
+    try {
+      await apiService.streamMessage({
+        message: userText,
+        sessionId,
+        destination: options.destination,
+        durationDays: options.durationDays,
+        travelStyle: options.travelStyle,
+        onThought: (thoughtText) => {
+          setAgentStatus({ type: 'thought', text: thoughtText });
+        },
+        onToolStart: (tool, toolText) => {
+          setAgentStatus({ type: 'tool', text: toolText, tool });
+        },
+        onToolEnd: (tool, toolText) => {
+          setAgentStatus({ type: 'tool_done', text: toolText, tool });
+        },
+        onToken: (token) => {
+          accumulatedText += token;
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantMsgId ? { ...m, content: accumulatedText } : m
+            )
+          );
+        },
+        onTripPlan: (plan) => {
+          receivedPlan = plan;
+          setCurrentTrip(plan);
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantMsgId ? { ...m, trip_data: plan } : m
+            )
+          );
+          refreshSavedTrips();
+        },
+        onDone: (newSessionId) => {
+          if (newSessionId && newSessionId !== sessionId) {
+            setSessionId(newSessionId);
+          }
+          setAgentStatus(null);
+          setIsLoading(false);
+        },
+        onError: (errText) => {
+          console.warn('SSE Error encountered, falling back to REST endpoint:', errText);
+          fallbackRestCall(userText, options, assistantMsgId);
+        }
+      });
+    } catch (err) {
+      console.warn('Streaming failed, fallback:', err);
+      fallbackRestCall(userText, options, assistantMsgId);
+    } finally {
+      setIsLoading(false);
+      setAgentStatus(null);
+    }
+  };
+
+  // Graceful REST fallback if SSE encounters any proxy blocks
+  const fallbackRestCall = async (userText, options, assistantMsgId) => {
     try {
       const res = await apiService.sendMessage({
         message: userText,
@@ -60,34 +131,29 @@ export function useTripSession() {
         setSessionId(res.session_id);
       }
 
-      const assistantMsg = {
-        id: Date.now() + 1,
-        role: 'assistant',
-        content: res.reply,
-        trip_data: res.trip_plan,
-        created_at: new Date().toISOString(),
-      };
-
-      setMessages((prev) => [...prev, assistantMsg]);
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === assistantMsgId
+            ? { ...m, content: res.reply, trip_data: res.trip_plan }
+            : m
+        )
+      );
 
       if (res.trip_plan) {
         setCurrentTrip(res.trip_plan);
         refreshSavedTrips();
       }
-    } catch (err) {
-      console.error('Chat error:', err);
-      setError(err.response?.data?.detail || 'Failed to communicate with TripPilot. Please verify server connection.');
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now() + 1,
-          role: 'assistant',
-          content: '⚠️ Apologies, I encountered a temporary connection glitch. Please check your internet or retry.',
-          created_at: new Date().toISOString(),
-        },
-      ]);
-    } finally {
-      setIsLoading(false);
+    } catch (e) {
+      setError('Communication error. Please check your connection.');
+    }
+  };
+
+  // Update active trip state directly (e.g. from editor)
+  const updateCurrentTrip = (updatedPlan) => {
+    setCurrentTrip(updatedPlan);
+    // Optionally update in DB
+    if (updatedPlan.id) {
+      apiService.saveTrip(updatedPlan).then(() => refreshSavedTrips()).catch(console.error);
     }
   };
 
@@ -98,6 +164,7 @@ export function useTripSession() {
     setMessages([]);
     setCurrentTrip(null);
     setError(null);
+    setAgentStatus(null);
   };
 
   // Load a saved trip into the active workspace
@@ -133,8 +200,10 @@ export function useTripSession() {
     currentTrip,
     savedTrips,
     isLoading,
+    agentStatus,
     error,
     sendMessage,
+    updateCurrentTrip,
     startNewTrip,
     loadSavedTrip,
     deleteSavedTrip,

@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Sparkles, Loader2, SlidersHorizontal, MapPin, Calendar, Compass } from 'lucide-react';
+import { Send, Sparkles, Loader2, SlidersHorizontal, MapPin, Calendar, Compass, Plane, Building2, Sun, DollarSign, Brain } from 'lucide-react';
 import { MessageItem } from './MessageItem';
 import { PromptSuggestions } from './PromptSuggestions';
 
-export function ChatBox({ messages, isLoading, onSendMessage }) {
+export function ChatBox({ messages, isLoading, agentStatus, onSendMessage }) {
   const [input, setInput] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [destination, setDestination] = useState('');
@@ -17,7 +17,7 @@ export function ChatBox({ messages, isLoading, onSendMessage }) {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isLoading]);
+  }, [messages, isLoading, agentStatus]);
 
   const handleSubmit = (e) => {
     e?.preventDefault();
@@ -38,6 +38,21 @@ export function ChatBox({ messages, isLoading, onSendMessage }) {
     onSendMessage(promptText, opts);
   };
 
+  const renderToolIcon = (tool) => {
+    switch (tool) {
+      case 'search_flights':
+        return <Plane className="w-3.5 h-3.5 text-sky-400 animate-pulse" />;
+      case 'search_hotels':
+        return <Building2 className="w-3.5 h-3.5 text-indigo-400" />;
+      case 'weather_forecast':
+        return <Sun className="w-3.5 h-3.5 text-amber-400" />;
+      case 'budget_optimizer':
+        return <DollarSign className="w-3.5 h-3.5 text-emerald-400" />;
+      default:
+        return <Brain className="w-3.5 h-3.5 text-purple-400 animate-pulse" />;
+    }
+  };
+
   return (
     <div className="flex flex-col h-full bg-slate-900/60 rounded-2xl border border-slate-800 backdrop-blur-md overflow-hidden shadow-2xl">
       {/* Header bar */}
@@ -45,6 +60,9 @@ export function ChatBox({ messages, isLoading, onSendMessage }) {
         <div className="flex items-center space-x-2">
           <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
           <span className="text-xs sm:text-sm font-semibold text-slate-200">TripPilot Copilot</span>
+          <span className="text-[10px] px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 font-mono">
+            SSE Stream
+          </span>
         </div>
         <button
           onClick={() => setShowFilters(!showFilters)}
@@ -130,10 +148,21 @@ export function ChatBox({ messages, isLoading, onSendMessage }) {
           ))
         )}
 
+        {/* Live Agent Execution & Tool Progress Badge */}
         {isLoading && (
-          <div className="flex items-center space-x-2 p-3 text-slate-400 text-xs rounded-xl bg-slate-800/40 w-fit">
-            <Loader2 className="w-4 h-4 animate-spin text-sky-400" />
-            <span>TripPilot is curating your personalized travel plan...</span>
+          <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/80 text-xs text-slate-300 shadow-md space-y-1.5 w-fit max-w-[90%]">
+            <div className="flex items-center space-x-2 font-medium">
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-sky-400 shrink-0" />
+              <span>{agentStatus?.text || 'TripPilot agent is curating your personalized travel dossier...'}</span>
+            </div>
+            {agentStatus?.tool && (
+              <div className="flex items-center space-x-1.5 text-[11px] text-sky-300 pl-5">
+                {renderToolIcon(agentStatus.tool)}
+                <span className="font-mono uppercase text-[10px] bg-slate-900/80 px-1.5 py-0.5 rounded border border-slate-700">
+                  {agentStatus.tool}
+                </span>
+              </div>
+            )}
           </div>
         )}
         <div ref={messagesEndRef} />

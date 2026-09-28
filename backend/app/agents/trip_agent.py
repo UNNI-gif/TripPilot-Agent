@@ -88,6 +88,24 @@ class TripPilotAgent:
         )
         budget = BudgetBreakdown(**budget_raw)
 
+        # Base coordinates for mapping
+        dest_key = dest.lower().split(",")[0].strip()
+        coords_map = {
+            "kyoto": (35.0116, 135.7681),
+            "tokyo": (35.6762, 139.6503),
+            "paris": (48.8566, 2.3522),
+            "rome": (41.9028, 12.4964),
+            "london": (51.5074, -0.1278),
+            "barcelona": (41.3879, 2.1699),
+            "bali": (-8.3405, 115.0920),
+            "santorini": (36.3932, 25.4615),
+            "new york": (40.7128, -74.0060),
+            "bangkok": (13.7563, 100.5018),
+            "amsterdam": (52.3676, 4.9041),
+            "zurich": (47.3769, 8.5417)
+        }
+        base_lat, base_lng = coords_map.get(dest_key, (48.8566, 2.3522))
+
         # Build day-by-day itinerary
         day_themes = [
             f"Iconic Landmarks & Historical Heart of {dest}",
@@ -102,6 +120,8 @@ class TripPilotAgent:
         itinerary = []
         for d in range(1, days + 1):
             theme = day_themes[(d - 1) % len(day_themes)]
+            day_offset_lat = (d - 1) * 0.008
+            day_offset_lng = (d - 1) * 0.009
             activities = [
                 ActivityItem(
                     time_slot="Morning",
@@ -111,6 +131,8 @@ class TripPilotAgent:
                     location=f"Old Town Center, {dest}",
                     category="Culture & Sightseeing",
                     estimated_cost="$15",
+                    latitude=round(base_lat + day_offset_lat + 0.005, 4),
+                    longitude=round(base_lng + day_offset_lng - 0.004, 4),
                     tips="Beat the crowd by arriving right at opening time."
                 ),
                 ActivityItem(
@@ -121,6 +143,8 @@ class TripPilotAgent:
                     location=f"Artisan District, {dest}",
                     category="Nature & Leisure",
                     estimated_cost="Free",
+                    latitude=round(base_lat + day_offset_lat - 0.003, 4),
+                    longitude=round(base_lng + day_offset_lng + 0.006, 4),
                     tips="Stop by local tea shops or espresso counters for an afternoon refresher."
                 ),
                 ActivityItem(
@@ -131,6 +155,8 @@ class TripPilotAgent:
                     location=f"Skyline Promenade, {dest}",
                     category="Entertainment",
                     estimated_cost="$20",
+                    latitude=round(base_lat + day_offset_lat + 0.008, 4),
+                    longitude=round(base_lng + day_offset_lng + 0.002, 4),
                     tips="Pre-book sunset time tickets for prime photo opportunities."
                 )
             ]

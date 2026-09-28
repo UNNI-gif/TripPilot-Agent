@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.logging import logger
 from app.db.session import engine, Base
-from app.api.routes import health, trips, chat
+from app.api.routes import health, trips, chat, currency
 
 # Create database tables if they do not exist
 Base.metadata.create_all(bind=engine)
@@ -29,6 +29,7 @@ app.add_middleware(
 app.include_router(health.router, prefix="/api")
 app.include_router(trips.router, prefix="/api")
 app.include_router(chat.router, prefix="/api")
+app.include_router(currency.router, prefix="/api")
 
 @app.get("/")
 def root():

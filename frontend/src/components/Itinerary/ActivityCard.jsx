@@ -1,7 +1,7 @@
 import React from 'react';
-import { Clock, MapPin, Tag, Lightbulb, DollarSign } from 'lucide-react';
+import { Clock, MapPin, Tag, Lightbulb, DollarSign, Edit3 } from 'lucide-react';
 
-export function ActivityCard({ activity }) {
+export function ActivityCard({ activity, onEdit }) {
   if (!activity) return null;
 
   const getSlotColor = (slot) => {
@@ -27,7 +27,7 @@ export function ActivityCard({ activity }) {
       <div className="absolute left-1 top-2.5 w-3.5 h-3.5 rounded-full bg-slate-900 border-2 border-sky-400 group-hover:scale-125 transition-transform" />
 
       {/* Card Content */}
-      <div className="p-3.5 sm:p-4 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition-all shadow-sm">
+      <div className="p-3.5 sm:p-4 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition-all shadow-sm relative group/card">
         
         {/* Time Slot & Badges */}
         <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
@@ -48,6 +48,15 @@ export function ActivityCard({ activity }) {
             <span className="px-2 py-0.5 text-[10px] font-semibold rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
               {activity.estimated_cost}
             </span>
+            {onEdit && (
+              <button
+                onClick={onEdit}
+                className="opacity-0 group-hover/card:opacity-100 p-1 text-slate-400 hover:text-sky-400 hover:bg-slate-800 rounded transition-all"
+                title="Edit Activity"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         </div>
 

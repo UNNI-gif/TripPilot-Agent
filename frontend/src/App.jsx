@@ -14,7 +14,9 @@ export default function App() {
     currentTrip,
     savedTrips,
     isLoading,
+    agentStatus,
     sendMessage,
+    updateCurrentTrip,
     startNewTrip,
     loadSavedTrip,
     deleteSavedTrip
@@ -69,13 +71,17 @@ export default function App() {
           <ChatBox
             messages={messages}
             isLoading={isLoading}
+            agentStatus={agentStatus}
             onSendMessage={sendMessage}
           />
         </div>
 
         {/* Right Column: Itinerary Board (Visible on Desktop, or when mobileTab === 'itinerary') */}
         <div className={`lg:col-span-7 h-[calc(100vh-6.5rem)] overflow-y-auto pr-1 ${mobileTab === 'itinerary' ? 'block' : 'hidden lg:block'}`}>
-          <ItineraryBoard tripPlan={currentTrip} />
+          <ItineraryBoard
+            tripPlan={currentTrip}
+            onUpdateTripPlan={updateCurrentTrip}
+          />
         </div>
 
       </main>

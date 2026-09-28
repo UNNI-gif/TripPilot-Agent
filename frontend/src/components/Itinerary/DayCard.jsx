@@ -1,8 +1,8 @@
 import React from 'react';
 import { ActivityCard } from './ActivityCard';
-import { Utensils, Navigation, Calendar } from 'lucide-react';
+import { Utensils, Navigation, Calendar, Plus } from 'lucide-react';
 
-export function DayCard({ day }) {
+export function DayCard({ day, onEditActivity, onAddActivity }) {
   if (!day) return null;
 
   return (
@@ -39,12 +39,28 @@ export function DayCard({ day }) {
 
       {/* Activities Timeline */}
       <div className="mb-6">
-        <h5 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-          Daily Schedule & Highlights
-        </h5>
+        <div className="flex items-center justify-between mb-3">
+          <h5 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            Daily Schedule & Highlights
+          </h5>
+          {onAddActivity && (
+            <button
+              onClick={() => onAddActivity(day.day_number)}
+              className="flex items-center space-x-1 text-xs text-sky-400 hover:text-sky-300 transition-colors font-medium"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Activity</span>
+            </button>
+          )}
+        </div>
+
         <div className="space-y-1">
           {(day.activities || []).map((act, idx) => (
-            <ActivityCard key={idx} activity={act} />
+            <ActivityCard
+              key={idx}
+              activity={act}
+              onEdit={onEditActivity ? () => onEditActivity(day.day_number, idx, act) : undefined}
+            />
           ))}
         </div>
       </div>

@@ -5,6 +5,7 @@ from app.tools.flights_tool import search_flights
 from app.tools.hotels_tool import search_hotels
 from app.tools.weather_tool import get_weather_and_packing_tips
 from app.tools.budget_tool import calculate_trip_budget
+from app.tools.currency_tool import convert_currency
 
 client = TestClient(app)
 
@@ -32,6 +33,13 @@ def test_tools():
     assert budget["total_estimated"] > 0
     assert budget["currency"] == "USD"
 
+def test_currency_conversion():
+    res = client.get("/api/currency/convert?amount=1000&from_currency=USD&to_currency=EUR")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["to_currency"] == "EUR"
+    assert data["converted_amount"] > 0
+
 def test_generate_trip():
     response = client.post("/api/trips/generate?destination=Rome&duration_days=3&travel_style=moderate")
     assert response.status_code == 200
@@ -41,6 +49,8 @@ def test_generate_trip():
     assert len(data["itinerary"]) == 3
     assert len(data["hotels"]) > 0
     assert len(data["flights"]) > 0
+    # Coordinates check
+    assert data["itinerary"][0]["activities"][0]["latitude"] is not None
 
 def test_chat_interaction():
     response = client.post("/api/chat", json={
@@ -56,3 +66,14 @@ def test_chat_interaction():
     assert data["trip_plan"] is not None
     assert data["trip_plan"]["destination"] == "Paris"
     assert len(data["trip_plan"]["itinerary"]) == 4
+
+def test_chat_stream():
+    with client.stream("POST", "/api/chat/stream", json={
+        "message": "Quick weekend trip to Rome",
+        "destination": "Rome",
+        "duration_days": 2
+    }) as stream_res:
+        assert stream_res.status_code == 200
+        # Read initial chunk
+        chunks = list(stream_res.iter_lines())
+        assert len(chunks) > 0

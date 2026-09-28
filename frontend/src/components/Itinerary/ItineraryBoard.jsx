@@ -4,11 +4,21 @@ import { TripOverviewCard } from '../Overview/TripOverviewCard';
 import { FlightCard } from '../Overview/FlightCard';
 import { HotelCard } from '../Overview/HotelCard';
 import { BudgetBreakdownCard } from '../Budget/BudgetBreakdownCard';
-import { Plane, Building2, Calendar, DollarSign, Compass, Layers } from 'lucide-react';
+import { TripMap } from '../Map/TripMap';
+import { ActivityEditModal } from './ActivityEditModal';
+import { Plane, Building2, Calendar, DollarSign, Compass, MapPin, Layers } from 'lucide-react';
 
-export function ItineraryBoard({ tripPlan }) {
+export function ItineraryBoard({ tripPlan, onUpdateTripPlan }) {
   const [activeTab, setActiveTab] = useState('all'); // 'all', or 'day-X'
-  const [activeSection, setActiveSection] = useState('itinerary'); // 'itinerary', 'stays_flights', 'budget'
+  const [activeSection, setActiveSection] = useState('itinerary'); // 'itinerary', 'map', 'stays_flights', 'budget'
+
+  // Activity Edit Modal State
+  const [editModalState, setEditModalState] = useState({
+    isOpen: false,
+    activity: null,
+    dayNumber: 1,
+    activityIndex: 0,
+  });
 
   if (!tripPlan) {
     return (
@@ -26,7 +36,73 @@ export function ItineraryBoard({ tripPlan }) {
     );
   }
 
-  const { overview, title, duration_days, flights, hotels, itinerary, budget } = tripPlan;
+  const { overview, title, duration_days, destination, flights, hotels, itinerary, budget } = tripPlan;
+
+  const handleOpenEdit = (dayNumber, activityIndex, activity) => {
+    setEditModalState({
+      isOpen: true,
+      activity,
+      dayNumber,
+      activityIndex,
+    });
+  };
+
+  const handleOpenAdd = (dayNumber) => {
+    setEditModalState({
+      isOpen: true,
+      activity: {
+        title: 'New Activity',
+        time_slot: 'Afternoon',
+        time: '02:00 PM - 04:00 PM',
+        description: 'Explore local sights or enjoy a relaxing stroll.',
+        location: destination,
+        category: 'Leisure',
+        estimated_cost: '$0',
+        tips: 'Enjoy at your own pace.'
+      },
+      dayNumber,
+      activityIndex: -1, // Indicates a new activity
+    });
+  };
+
+  const handleSaveActivity = (dayNumber, activityIndex, updatedActivity) => {
+    if (!onUpdateTripPlan) return;
+    const newItinerary = (itinerary || []).map((day) => {
+      if (day.day_number === dayNumber) {
+        let newActivities = [...(day.activities || [])];
+        if (activityIndex === -1) {
+          // Add new
+          newActivities.push(updatedActivity);
+        } else {
+          // Update existing
+          newActivities[activityIndex] = updatedActivity;
+        }
+        return { ...day, activities: newActivities };
+      }
+      return day;
+    });
+
+    onUpdateTripPlan({
+      ...tripPlan,
+      itinerary: newItinerary,
+    });
+  };
+
+  const handleDeleteActivity = (dayNumber, activityIndex) => {
+    if (!onUpdateTripPlan) return;
+    const newItinerary = (itinerary || []).map((day) => {
+      if (day.day_number === dayNumber) {
+        const newActivities = (day.activities || []).filter((_, idx) => idx !== activityIndex);
+        return { ...day, activities: newActivities };
+      }
+      return day;
+    });
+
+    onUpdateTripPlan({
+      ...tripPlan,
+      itinerary: newItinerary,
+    });
+  };
 
   return (
     <div className="space-y-6 pb-12">
@@ -46,6 +122,18 @@ export function ItineraryBoard({ tripPlan }) {
           >
             <Calendar className="w-4 h-4" />
             <span>Itinerary ({itinerary?.length || 0} Days)</span>
+          </button>
+
+          <button
+            onClick={() => setActiveSection('map')}
+            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+              activeSection === 'map'
+                ? 'bg-sky-500 text-white shadow-md shadow-sky-500/20'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+            }`}
+          >
+            <MapPin className="w-4 h-4 text-emerald-400" />
+            <span>Route Map</span>
           </button>
 
           <button
@@ -109,9 +197,18 @@ export function ItineraryBoard({ tripPlan }) {
           {(itinerary || [])
             .filter((d) => activeTab === 'all' || activeTab === `day-${d.day_number}`)
             .map((day) => (
-              <DayCard key={day.day_number} day={day} />
+              <DayCard
+                key={day.day_number}
+                day={day}
+                onEditActivity={handleOpenEdit}
+                onAddActivity={handleOpenAdd}
+              />
             ))}
         </div>
+      )}
+
+      {activeSection === 'map' && (
+        <TripMap itinerary={itinerary} destination={destination} />
       )}
 
       {activeSection === 'stays_flights' && (
@@ -151,6 +248,17 @@ export function ItineraryBoard({ tripPlan }) {
       {activeSection === 'budget' && (
         <BudgetBreakdownCard budget={budget} durationDays={duration_days} />
       )}
+
+      {/* Activity Edit / Add Modal */}
+      <ActivityEditModal
+        isOpen={editModalState.isOpen}
+        onClose={() => setEditModalState({ ...editModalState, isOpen: false })}
+        activity={editModalState.activity}
+        dayNumber={editModalState.dayNumber}
+        activityIndex={editModalState.activityIndex}
+        onSaveActivity={handleSaveActivity}
+        onDeleteActivity={handleDeleteActivity}
+      />
     </div>
   );
 }
